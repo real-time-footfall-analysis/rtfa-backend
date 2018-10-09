@@ -8,6 +8,5 @@ func main() {
 
 func verboseAdder(x, y int) (int) {
 	sum := x + y
-	fmt.Printf("Adding %d", x)
 	return sum
 }
