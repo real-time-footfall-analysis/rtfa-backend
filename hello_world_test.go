@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestVerboseAdder(t *testing.T) {
-
-	t.Fail()
-
+	if verboseAdder(5,3) != 8 {
+		t.Fail()
+	}
 }
