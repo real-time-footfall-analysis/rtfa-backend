@@ -1,11 +1,16 @@
-FROM golang:1.11.1-alpine
+FROM golang:1.8.3-alpine
 
-COPY . /go/src/github.com/real-time-footfall-analysis/rtfa-backend
+WORKDIR /go/src/github.com/real-time-footfall-analysis/rtfa-backend/
+
+COPY . .
+
+RUN apk add --no-cache git
+RUN go get -u github.com/gorilla/mux
 
 RUN go test -v ./...
 
-RUN go build -o ./bin/main /go/src/github.com/real-time-footfall-analysis/rtfa-backend/
+RUN go build -o ~/go/bin/main .
 
-ENTRYPOINT ./bin/main
+ENTRYPOINT ~/go/bin/main
 
 EXPOSE 80
