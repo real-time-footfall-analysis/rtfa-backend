@@ -18,7 +18,7 @@ func main() {
 	r.HandleFunc("/", standardHandler)
 	r.HandleFunc("/api/health", healthHandler).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":80", r))
 }
 
 func standardHandler(w http.ResponseWriter, r *http.Request) {
