@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type TestMessage struct {
@@ -13,21 +10,8 @@ type TestMessage struct {
 }
 
 func main() {
+	a := App{}
+	initialize(&a)
 
-	r := mux.NewRouter()
-	r.HandleFunc("/", standardHandler)
-	r.HandleFunc("/api/health", healthHandler).Methods("GET")
-
-	log.Fatal(http.ListenAndServe(":80", r))
-}
-
-func standardHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(TestMessage{
-		Message: "Hello, World!",
-	})
-	return
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	return
+	log.Fatal(http.ListenAndServe(":80", a.Router))
 }
