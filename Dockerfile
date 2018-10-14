@@ -4,6 +4,11 @@ WORKDIR /go/src/github.com/real-time-footfall-analysis/rtfa-backend/
 
 COPY . .
 
+ARG RTFA_STATICDATA_DB_USER
+ENV RTFA_STATICDATA_DB_USER=$RTFA_STATICDATA_DB_USER 
+ARG IMAGE_RTFA_STATICDATA_DB_PASSWORD
+ENV IMAGE_RTFA_STATICDATA_DB_PASSWORD=$IMAGE_RTFA_STATICDATA_DB_PASSWORD
+
 RUN apk add --no-cache git
 RUN go get -u github.com/gorilla/mux
 
