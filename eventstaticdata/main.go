@@ -50,7 +50,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Invalid event: %s", err)
+			fmt.Sprintf("Invalid event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -60,7 +60,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to write event to database: %s", err)
+			fmt.Sprintf("Failed to write event to database: %s", err),
 			http.StatusBadRequest)
 		return
 	}
