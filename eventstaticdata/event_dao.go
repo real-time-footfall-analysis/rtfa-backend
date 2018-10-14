@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	// Postgres driver
+	_ "github.com/lib/pq"
 )
 
 const (
