@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	eventmetadata "github.com/real-time-footfall-analysis/rtfa-backend/event-metadata"
 )
 
 type TestMessage struct {
@@ -17,6 +18,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", standardHandler)
 	r.HandleFunc("/api/health", healthHandler).Methods("GET")
+	eventmetadata.Init(r)
 
 	log.Fatal(http.ListenAndServe(":80", r))
 }
