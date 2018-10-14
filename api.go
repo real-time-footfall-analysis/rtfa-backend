@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/eventstaticdata"
 )
 
 type App struct {
@@ -20,7 +22,7 @@ func initialize(a *App) {
 func initializeRoutes(a *App) {
 	a.Router.HandleFunc("/", standardHandler)
 	a.Router.HandleFunc("/api/health", healthHandler).Methods("GET")
-
+	eventstaticdata.Init(a.Router)
 }
 
 func standardHandler(w http.ResponseWriter, _ *http.Request) {

@@ -12,7 +12,7 @@ before_install:
   - chmod +x deploy.sh
 
 script:
-  - docker build -t rtfa-backend .
+  - docker build -t rtfa-backend . $(printenv | grep -E '^IMAGE_' | sed 's/IMAGE_/--build-arg /g')
 
 after_success:
   ./deploy.sh
