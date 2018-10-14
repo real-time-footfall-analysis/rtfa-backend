@@ -64,5 +64,6 @@ func addEvent(event *Event) (*Event, error) {
 
 	// TODO: and insert into database
 	// probably with a raw SQL call
+	return nil, nil
 
 }
