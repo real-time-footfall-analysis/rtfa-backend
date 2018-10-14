@@ -10,6 +10,7 @@ ARG RTFA_STATICDATA_DB_PASSWORD
 ENV RTFA_STATICDATA_DB_PASSWORD=$RTFA_STATICDATA_DB_PASSWORD
 
 RUN apk add --no-cache git
+RUN go get -u github.com/lib/pq
 RUN go get -u github.com/gorilla/mux
 
 RUN go test -v ./...
