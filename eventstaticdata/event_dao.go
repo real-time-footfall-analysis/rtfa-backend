@@ -68,6 +68,16 @@ func addEvent(event *Event) (*Event, error) {
 
 	// TODO: and insert into database
 	// probably with a raw SQL call
+	rows, err := db.Query(
+		"INSERT INTO event "+
+			"(organiserid, name, location, startdate, enddate, maxattendance, coverphotourl) "+
+			"VALUES($1, $2, $3, %4, $5, $6, $7)",
+		event.OrganiserID,
+		event.Name,
+		event.Location,
+		event.StartDate,
+		event.EndDate,
+		event.MaxAttendance)
 	return nil, nil
 
 }
