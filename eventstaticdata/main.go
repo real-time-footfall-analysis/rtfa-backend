@@ -40,7 +40,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprint("Failed to decode event: %s", err),
+			fmt.Sprintf("Failed to decode event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
