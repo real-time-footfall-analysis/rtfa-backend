@@ -10,7 +10,8 @@ func TestInvalidEventThrowsError(t *testing.T) {
 		Location:      "Huxley, Imperial College London",
 		StartDate:     "2018-12-05",
 		EndDate:       "2018-12-10",
-		MaxAttendance: "500"}
+		MaxAttendance: "500",
+		CoverPhotoURL: "http://imgur.com/image.jpg"}
 	if err := validateEvent(&validEvent); err != nil {
 		t.Errorf("Not expecting an error when validating a valid event: %+v",
 			validEvent)
@@ -22,7 +23,8 @@ func TestInvalidEventThrowsError(t *testing.T) {
 		Location:      "",
 		StartDate:     "2018-12-10",
 		EndDate:       "2018-12-05",
-		MaxAttendance: "many"}
+		MaxAttendance: "many",
+		CoverPhotoURL: "image"}
 	if err := validateEvent(&invalidEvent); err == nil {
 		t.Errorf("Expecting an error when validating an invalid event: %+v",
 			invalidEvent)
@@ -106,7 +108,7 @@ func TestValidateDates(t *testing.T) {
 
 }
 
-func TestMaxAttendance(t *testing.T) {
+func TestValidateMaxAttendance(t *testing.T) {
 
 	if err := validateMaxAttendance(""); err == nil {
 		t.Error("Expecting an error when validating an empty event Max Attendance")
@@ -122,6 +124,25 @@ func TestMaxAttendance(t *testing.T) {
 	if err := validateMaxAttendance(validMaxAttendance); err != nil {
 		t.Error("Not expecting an error when validating a valid event"+
 			" Max Attendance: %s", validMaxAttendance)
+	}
+
+}
+
+func TestValidateCoverPhotoUrl(t *testing.T) {
+
+	if err := validateCoverPhotoUrl(""); err == nil {
+		t.Error("Expecting an error when validating an empty event" +
+			" Cover Photo URL")
+	}
+	invalidUrl := "image"
+	if err := validateCoverPhotoUrl(invalidUrl); err == nil {
+		t.Errorf("Expecting an error when validating an event Cover "+
+			"Photo URL which is not an absolute URL: %s", invalidUrl)
+	}
+	validUrl := "http://imgur.com/image.jpg"
+	if err := validateCoverPhotoUrl("http://imgur.com/image.jpg"); err != nil {
+		t.Errorf("Not expecting an error when validating a valid event "+
+			"Cover Photo URL: %s", validUrl)
 	}
 
 }

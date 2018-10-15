@@ -23,6 +23,7 @@ type Event struct {
 	StartDate     string `json:"startDate"`
 	EndDate       string `json:"endDate"`
 	MaxAttendance string `json:"maxAttendance"`
+	CoverPhotoURL string `json:"coverPhotoUrl"`
 }
 
 type Map struct {

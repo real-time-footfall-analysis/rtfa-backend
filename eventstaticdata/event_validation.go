@@ -2,6 +2,7 @@ package eventstaticdata
 
 import (
 	"errors"
+	"net/url"
 	"strconv"
 	"time"
 )
@@ -21,6 +22,9 @@ func validateEvent(event *Event) error {
 		return err
 	}
 	if err := validateMaxAttendance(event.MaxAttendance); err != nil {
+		return err
+	}
+	if err := validateCoverPhotoUrl(event.CoverPhotoURL); err != nil {
 		return err
 	}
 
@@ -85,6 +89,18 @@ func validateMaxAttendance(maxAttendance string) error {
 	if _, err := strconv.Atoi(maxAttendance); err != nil {
 		return errors.New("The Event Max Attendance value must be a number " +
 			" and be between 0 and 9223372036854775807")
+	}
+
+	return nil
+}
+
+func validateCoverPhotoUrl(coverPhotoURL string) error {
+
+	if coverPhotoURL == "" {
+		return errors.New("Missing Event Cover Photo URL")
+	}
+	if _, err := url.ParseRequestURI(coverPhotoURL); err != nil {
+		return errors.New("The Event Cover Photo URL must be a valid URL")
 	}
 
 	return nil
