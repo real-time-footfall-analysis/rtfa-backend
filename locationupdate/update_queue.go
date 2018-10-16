@@ -2,7 +2,6 @@ package locationupdate
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
@@ -44,7 +43,7 @@ func (kq *kenisis_queue) addLocationUpdate(event *update) error {
 	byteEncodedMov, _ := json.Marshal(event)
 
 	// Send the record to Kinesis
-	putOutput, err := kq.kinesis.PutRecord(&kinesis.PutRecordInput{
+	_, err := kq.kinesis.PutRecord(&kinesis.PutRecordInput{
 		Data:         byteEncodedMov,
 		StreamName:   aws.String(kq.streamName),
 		PartitionKey: aws.String("key1"),
@@ -52,8 +51,6 @@ func (kq *kenisis_queue) addLocationUpdate(event *update) error {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", putOutput)
-	// TODO: add event to queue_adapter
 	return nil
 
 }
