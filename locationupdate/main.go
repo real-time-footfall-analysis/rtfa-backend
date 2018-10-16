@@ -22,9 +22,9 @@ func Init(r *mux.Router) {
 
 type update struct {
 	UUID     string `json:"uuid"`
-	EventID  int    `json:"EventId"`
-	RegionID int    `json:"BeaconMajor"`
-	Entering bool   `json:"Entering"`
+	EventID  int    `json:"eventId"`
+	RegionID int    `json:"regionId"`
+	Entering bool   `json:"entering"`
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
