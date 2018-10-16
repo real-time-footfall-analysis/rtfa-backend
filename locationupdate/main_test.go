@@ -52,17 +52,18 @@ func TestEmptyLocationUpdate(t *testing.T) {
 
 func TestLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
-	update := BluetoothUpdate{
-		UUID:        "Test-UUID",
-		EventID:     "Test-Event",
-		BeaconMajor: 7357,
-		BeaconMinor: 1234,
-		Entering:    true,
+	update := update{
+		UUID:     "Test-UUID",
+		EventID:  0,
+		RegionID: 1,
+		Entering: true,
 	}
+
+	queue = &dummy_queue{update: update, t: t}
 
 	err := json.NewEncoder(&buf).Encode(&update)
 	if err != nil {
-		t.Error("Unable to encode BluetoothUpdate struct to json")
+		t.Error("Unable to encode update struct to json")
 	}
 
 	req, _ := http.NewRequest("POST", "/update", &buf)
@@ -85,4 +86,22 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	if expected != actual {
 		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
 	}
+}
+
+type dummy_queue struct {
+	update update
+	t      *testing.T
+}
+
+// initConn opens the connection to the location event kinesis queue
+func (dq *dummy_queue) initConn() error {
+	return nil
+}
+
+// Pre: the event object is valid
+func (dq *dummy_queue) addLocationUpdate(event *update) error {
+	if *event != dq.update {
+		dq.t.Error("incorrect update fired to queue")
+	}
+	return nil
 }

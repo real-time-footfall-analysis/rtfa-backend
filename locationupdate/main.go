@@ -11,17 +11,26 @@ import (
 // Init registers the endpoints exposed by this package
 // with the given Router.
 // Also initialises the static data database connection
+var queue queue_adapter = &kenisis_queue{}
+
 func Init(r *mux.Router) {
 
-	initConn()
+	queue.initConn()
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
+}
+
+type update struct {
+	UUID     string `json:"uuid"`
+	EventID  int    `json:"EventId"`
+	RegionID int    `json:"BeaconMajor"`
+	Entering bool   `json:"Entering"`
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	decoder := json.NewDecoder(request.Body)
 
-	var update BluetoothUpdate
+	var update update
 
 	err := decoder.Decode(&update)
 
@@ -34,9 +43,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	//TODO: check if event id is valid?
-
-	addLocationUpdate(&update)
+	queue.addLocationUpdate(&update)
 
 	return
 }
