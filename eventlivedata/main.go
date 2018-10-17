@@ -3,13 +3,14 @@ package eventlivedata
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
-	"os"
 )
 
 var db live_db_adapter = &dynamodb_adapter{}
@@ -18,11 +19,11 @@ func Init(r *mux.Router) {
 
 	db.initConn()
 
-	r.HandleFunc("/live/heatmap", heatmapHandler).Methods("POST")
+	r.HandleFunc("/live/heatmap", heatmapHandler).Methods("GET")
 }
 
 type mapRequest struct {
-	EventId string `json:"event_id"`
+	EventID int32 `json:"event_id,string"`
 }
 
 func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
@@ -41,7 +42,7 @@ func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	heatMap, _ := db.getLiveHeatMap()
+	heatMap, _ := db.getLiveHeatMap(int(req.EventID))
 
 	json.NewEncoder(writer).Encode(heatMap)
 
