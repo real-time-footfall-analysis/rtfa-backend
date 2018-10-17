@@ -12,11 +12,6 @@ type queue_adapter interface {
 	addLocationUpdate(event *update) error
 }
 
-type Movement struct {
-	AttendeeID string `json:"attendee_id"`
-	Location   string `json:"location"`
-}
-
 type kenisis_queue struct {
 	kinesis    *kinesis.Kinesis
 	streamName string
