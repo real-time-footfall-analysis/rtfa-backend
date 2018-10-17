@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/eventlivedata"
 	"github.com/real-time-footfall-analysis/rtfa-backend/eventstaticdata"
+	"github.com/real-time-footfall-analysis/rtfa-backend/locationupdate"
 )
 
 type App struct {
@@ -23,6 +25,8 @@ func initializeRoutes(a *App) {
 	a.Router.HandleFunc("/", standardHandler)
 	a.Router.HandleFunc("/api/health", healthHandler).Methods("GET")
 	eventstaticdata.Init(a.Router)
+	locationupdate.Init(a.Router)
+	eventlivedata.Init(a.Router)
 }
 
 func standardHandler(w http.ResponseWriter, _ *http.Request) {
