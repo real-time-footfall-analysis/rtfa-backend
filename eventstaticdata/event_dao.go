@@ -37,7 +37,7 @@ type Map struct {
 	ID        int32    `json:"id,omitempty,string"`
 	Type      string   `json:"type"`
 	Zoom      int32    `json:"zoom,string"`
-	EventID   string   `json:"eventId"`
+	EventID   int32    `json:"eventId,string"`
 	Lat       float64  `json:"lat,string"`
 	Lng       float64  `json:"lng,string"`
 }

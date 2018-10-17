@@ -42,7 +42,7 @@ func validateMap(eventMap *Map) error {
 		return err
 	}
 
-	return err
+	return nil
 
 }
 

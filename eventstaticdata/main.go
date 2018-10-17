@@ -168,6 +168,8 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	var eventMap Map
 	err = decoder.Decode(&eventMap)
+	eventMap.EventID = int32(eventID)
+
 	if err != nil {
 		log.Println(err)
 		http.Error(
