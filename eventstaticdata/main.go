@@ -78,7 +78,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to unmarshall Event: %s", err),
+			fmt.Sprintf("Failed to unmarshall event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -88,7 +88,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Invalid Event: %s", err),
+			fmt.Sprintf("Invalid event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -98,7 +98,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to write Event to database: %s", err),
+			fmt.Sprintf("Failed to write event to database: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -115,7 +115,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 	if idStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Event ID"),
+			fmt.Sprint("Missing event ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -125,7 +125,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to parse Get Event by ID request: %s", err),
+			fmt.Sprintf("Failed to parse get event by ID request: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -135,7 +135,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to Get Event by ID: %s", err),
+			fmt.Sprintf("Failed to get event by ID: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -152,7 +152,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 	if eventIDStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Event ID"),
+			fmt.Sprint("Missing event ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -162,7 +162,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to parse Post Map request: %s", err),
+			fmt.Sprintf("Failed to parse post map request: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -187,7 +187,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Invalid Event: %s", err),
+			fmt.Sprintf("Invalid event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -296,7 +296,7 @@ func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to Get Regions by Event ID: %s", err),
+			fmt.Sprintf("Failed to get regions by event ID: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -314,7 +314,7 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 	if eventIDStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Event ID"),
+			fmt.Sprint("Missing event ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -322,7 +322,7 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 	if regionIDStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Region ID"),
+			fmt.Sprint("Missing region ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -352,7 +352,7 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to Get Region by Event ID: %s", err),
+			fmt.Sprintf("Failed to get region by event ID: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
