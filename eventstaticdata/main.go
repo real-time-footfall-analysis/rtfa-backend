@@ -17,7 +17,7 @@ func Init(r *mux.Router) {
 
 	fetchEnvVars()
 
-	r.HandleFunc("/events", getEventsHandler).Methods("GET")
+	r.HandleFunc("/events", getEventsHandler).Queries("organiserId", "{[0-9]*?}").Methods("GET")
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/map", postEventMapHandler).Methods("POST")
@@ -28,32 +28,17 @@ func Init(r *mux.Router) {
 
 func getEventsHandler(w http.ResponseWriter, r *http.Request) {
 
-	decoder := json.NewDecoder(r.Body)
-
-	var allEventsReq AllEventsRequest
-
-	err := decoder.Decode(&allEventsReq)
-
+	organiserID, err := strconv.Atoi(r.FormValue("organiserId"))
 	if err != nil {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to unmarshall get all events request: %s", err),
-			http.StatusBadRequest)
+			fmt.Sprintf("Failed to parse Organiser ID: %s", err),
+			http.StatusInternalServerError)
 		return
 	}
 
-	err = validateAllEventsRequest(&allEventsReq)
-	if err != nil {
-		log.Println(err)
-		http.Error(
-			w,
-			fmt.Sprintf("Invalid request for all Events: %s", err),
-			http.StatusBadRequest)
-		return
-	}
-
-	events, err := getAllEventsByOrganiserID(allEventsReq.OrganiserID)
+	events, err := getAllEventsByOrganiserID(int32(organiserID))
 	if err != nil {
 		log.Println(err)
 		http.Error(
