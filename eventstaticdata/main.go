@@ -48,6 +48,7 @@ func getEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(events)
 
 }
@@ -88,6 +89,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
@@ -125,6 +127,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
@@ -187,6 +190,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(eventMap)
 
 }
@@ -249,6 +253,7 @@ func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
@@ -286,6 +291,7 @@ func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
@@ -342,6 +348,15 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(region)
+
+}
+
+func setAccessControlHeaders(w http.ResponseWriter) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Origin, User-Agent, Referer, Cache-Control, X-header")
 
 }
