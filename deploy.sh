@@ -24,7 +24,7 @@ elif [ "$TRAVIS_BRANCH" == "master" ]; then
   docker build -t rtfa-backend-api -f rtfa-backend/Dockerfile rtfa-backend
   docker tag rtfa-backend:latest 155067752274.dkr.ecr.eu-central-1.amazonaws.com/rtfa-backend:latest
   docker push 155067752274.dkr.ecr.eu-central-1.amazonaws.com/rtfa-backend:latest
-  ecs-deploy -c $CLUSTER_NAME -n rtfa-backend -i $IMAGE_REPO_URL:latest
+  ecs-deploy -c $CLUSTER_NAME -n rtfa-api-backend-service -i $IMAGE_REPO_URL:latest
 
   echo "Service deployed"
 else 
