@@ -5,8 +5,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"log"
 	"os"
 	"strconv"
+)
+
+const (
+	DYNOMODB_TABLE = "current_position"
 )
 
 type liveDbAdapter interface {
@@ -38,12 +43,11 @@ func (db *dynamoDbAdaptor) initConn() error {
 // Pre: the event object is valid
 func (db *dynamoDbAdaptor) getLiveHeatMap(event int) (map[string]int, error) {
 	params := &dynamodb.ScanInput{
-		TableName: aws.String("current_position"),
+		TableName: aws.String(DYNOMODB_TABLE),
 	}
 	result, err := db.db.Scan(params)
 	if err != nil {
-		fmt.Println("Got error doing scan:")
-		fmt.Println(err.Error())
+		log.Print("Got error doing scan:", err.Error())
 		os.Exit(1)
 	}
 	regionCounts := make(map[string]int, 0)
@@ -59,7 +63,6 @@ func (db *dynamoDbAdaptor) getLiveHeatMap(event int) (map[string]int, error) {
 			}
 		}
 	}
-	fmt.Print(regionCounts)
 	return regionCounts, nil
 
 }
