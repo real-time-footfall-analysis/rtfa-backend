@@ -18,10 +18,6 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/live/heatmap/{eventId}", heatmapHandler).Methods("GET")
 }
 
-type mapRequest struct {
-	EventID int32 `json:"event_id,string"`
-}
-
 func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 
 	vars := mux.Vars(request)
