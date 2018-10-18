@@ -48,6 +48,7 @@ type Region struct {
 	ID        int32    `json:"id,omitempty,string"`
 	Name      string   `json:"name"`
 	Type      string   `json:"type"`
+	UUID      string   `json:"uuid,omitempty"`
 	Major     int32    `json:"major,string,omitempty"`
 	Minor     int32    `json:"minor,string,omitempty"`
 	Lat       float64  `json:"lat,string,omitempty"`
