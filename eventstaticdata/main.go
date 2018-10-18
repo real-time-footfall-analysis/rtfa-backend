@@ -21,6 +21,9 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/map", postEventMapHandler).Methods("POST")
+	r.HandleFunc("/events/{eventId}/regions", postRegionsHandler).Methods("POST")
+	r.HandleFunc("/events/{eventId}/regions", getAllRegionsHandler).Methods("GET")
+	r.HandleFunc("/events/{eventId}/regions/{regionId}", getRegionHandler).Methods("GET")
 }
 
 func getEventsHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +78,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to unmarshall Event: %s", err),
+			fmt.Sprintf("Failed to unmarshall event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -85,7 +88,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Invalid Event: %s", err),
+			fmt.Sprintf("Invalid event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -95,7 +98,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to write Event to database: %s", err),
+			fmt.Sprintf("Failed to write event to database: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -112,7 +115,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 	if idStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Event ID"),
+			fmt.Sprint("Missing event ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -122,7 +125,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to parse Get Event by ID request: %s", err),
+			fmt.Sprintf("Failed to parse get event by ID request: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -132,7 +135,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to Get Event by ID: %s", err),
+			fmt.Sprintf("Failed to get event by ID: %s", err),
 			http.StatusInternalServerError)
 		return
 	}
@@ -149,7 +152,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 	if eventIDStr == "" {
 		http.Error(
 			w,
-			fmt.Sprint("Missing Event ID"),
+			fmt.Sprint("Missing event ID"),
 			http.StatusBadRequest)
 		return
 	}
@@ -159,7 +162,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to parse Post Map request: %s", err),
+			fmt.Sprintf("Failed to parse post map request: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -179,12 +182,12 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = validateMap(&eventMap)
+	err = validateMap(&eventMap, eventID)
 	if err != nil {
 		log.Println(err)
 		http.Error(
 			w,
-			fmt.Sprintf("Invalid Event: %s", err),
+			fmt.Sprintf("Invalid event: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -200,5 +203,160 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(eventMap)
+
+}
+
+func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	eventIDStr := vars["eventId"]
+
+	if eventIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing Event ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	eventID, err := strconv.Atoi(eventIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse event id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	var regions []Region
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&regions)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to unmarshall regions: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	for _, region := range regions {
+		err = validateRegion(&region, eventID)
+		if err != nil {
+			log.Println(err)
+			http.Error(
+				w,
+				fmt.Sprintf("Invalid Region: %s", err),
+				http.StatusBadRequest)
+			return
+		}
+	}
+
+	err = addRegions(&regions)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to write regions to database: %s", err),
+			http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(regions)
+
+}
+
+func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	eventIDStr := vars["eventId"]
+
+	if eventIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing Event ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	eventID, err := strconv.Atoi(eventIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse event id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	regions, err := getRegionsByEventID(eventID)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get regions by event ID: %s", err),
+			http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(regions)
+
+}
+
+func getRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	eventIDStr := vars["eventId"]
+	regionIDStr := vars["regionId"]
+
+	if eventIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing event ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	if regionIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing region ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	eventID, err := strconv.Atoi(eventIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse event id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	regionID, err := strconv.Atoi(regionIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse region id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	region, err := getRegionByID(eventID, regionID)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get region by event ID: %s", err),
+			http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(region)
 
 }

@@ -118,20 +118,6 @@ func TestValidateIndoorOutdoor(t *testing.T) {
 
 }
 
-func TestValidateMaxAttendance(t *testing.T) {
-
-	if err := validateMaxAttendance(0); err == nil {
-		t.Error("Expecting an error when validating an empty event Max Attendance")
-	}
-
-	const validMaxAttendance int64 = 15000
-	if err := validateMaxAttendance(validMaxAttendance); err != nil {
-		t.Error("Not expecting an error when validating a valid event"+
-			" Max Attendance: %d", validMaxAttendance)
-	}
-
-}
-
 func TestValidateCoverPhotoURL(t *testing.T) {
 
 	if err := validateCoverPhotoURL(""); err == nil {

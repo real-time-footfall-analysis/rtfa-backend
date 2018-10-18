@@ -42,6 +42,19 @@ type Map struct {
 	Lng       float64  `json:"lng,string"`
 }
 
+type Region struct {
+	tableName struct{} `sql:"region"`
+	ID        int32    `json:"id,omitempty,string"`
+	Name      string   `json:"name"`
+	Type      string   `json:"type"`
+	Major     int32    `json:"major,string,omitempty"`
+	Minor     int32    `json:"minor,string,omitempty"`
+	Lat       float64  `json:"lat,string,omitempty"`
+	Lng       float64  `json:"lng,string,omitempty"`
+	Radius    int32    `json:"radius,string,omitempty"`
+	EventID   int32    `json:"eventId,string"`
+}
+
 var dbUsername string
 var dbPassword string
 
@@ -70,8 +83,9 @@ func connectDB() *pg.DB {
 
 }
 
-// Pre: the event object is valid
-// Modifies the event object, inserting it's ID
+// All the add{Object} functions assume that the object is valid
+// and modify the object, inserting the new ID
+
 func addEvent(event *Event) error {
 
 	db := connectDB()
@@ -111,7 +125,6 @@ func getEventByID(id int) (*Event, error) {
 
 	event := &Event{ID: int32(id)}
 	err := db.Select(event)
-
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -121,8 +134,6 @@ func getEventByID(id int) (*Event, error) {
 
 }
 
-// Pre: the map object is valid
-// Modifies the map object, inserting it's ID
 func addMap(eventMap *Map) error {
 
 	db := connectDB()
@@ -135,5 +146,53 @@ func addMap(eventMap *Map) error {
 	}
 
 	return nil
+
+}
+
+func addRegions(regions *[]Region) error {
+
+	db := connectDB()
+	defer db.Close()
+
+	_, err := db.Model(regions).Insert()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
+
+func getRegionsByEventID(eventID int) (*[]Region, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var regions = make([]Region, 0)
+	err := db.Model(&regions).Where("event_id = ?", eventID).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &regions, nil
+
+}
+
+func getRegionByID(eventID, regionID int) (*Region, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var region Region
+
+	err := db.Model(&region).Where("id = ?", regionID).Where("event_id = ?", eventID).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &region, nil
 
 }
