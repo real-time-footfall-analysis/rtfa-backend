@@ -70,6 +70,8 @@ func fetchEnvVars() {
 	if dbPassword == "" && flag.Lookup("test.v") == nil {
 		log.Fatal("RTFA_STATICDATA_DB_PASSWORD not set.")
 	}
+	log.Println(dbUsername)
+	log.Println(dbPassword)
 
 }
 
