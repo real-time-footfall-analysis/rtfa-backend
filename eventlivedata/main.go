@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-var db live_db_adapter = &dynamodbAdaptor{}
+var db liveDbAdapter = &dynamoDbAdaptor{}
 
 func Init(r *mux.Router) {
 
@@ -43,47 +43,3 @@ func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 
 	return
 }
-
-/*
-func main() {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("eu-central-1")},
-	)
-	if err != nil {
-		fmt.Println("Got error creating session:")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	// Create DynamoDB client
-	svc := dynamodb.New(sess)
-	//proj := expression.NamesList(expression.Name("pKey"), expression.Name("regionId"), expression.Name("eventId"))
-	//expr, err := expression.NewBuilder().WithProjection(proj).Build()
-
-	if err != nil {
-		fmt.Println("Got error creating expression:")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	params := &dynamodb.ScanInput{
-		TableName: aws.String("current_position"),
-	}
-	result, err := svc.Scan(params)
-	if err != nil {
-		fmt.Println("Got error doing scan:")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	region_count := make(map[string]int, 0)
-	for _, row := range result.Items {
-		regionId := *row["regionId"].N
-		count, ok := region_count[regionId]
-		if !ok {
-			region_count[regionId] = 1
-			continue
-		}
-		region_count[regionId] = count + 1
-	}
-	fmt.Print(region_count)
-}
-
-*/
