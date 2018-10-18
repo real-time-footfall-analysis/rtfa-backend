@@ -1,6 +1,7 @@
 package eventstaticdata
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -62,11 +63,11 @@ var dbPassword string
 func fetchEnvVars() {
 
 	dbUsername = os.Getenv("RTFA_STATICDATA_DB_USER")
-	if dbUsername == "" {
+	if dbUsername == "" && flag.Lookup("test.v") == nil {
 		log.Fatal("RTFA_STATICDATA_DB_USER not set.")
 	}
 	dbPassword = os.Getenv("RTFA_STATICDATA_DB_PASSWORD")
-	if dbPassword == "" {
+	if dbPassword == "" && flag.Lookup("test.v") == nil {
 		log.Fatal("RTFA_STATICDATA_DB_PASSWORD not set.")
 	}
 
