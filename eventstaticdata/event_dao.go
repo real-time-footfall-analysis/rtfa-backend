@@ -18,8 +18,8 @@ const (
 
 type Event struct {
 	tableName     struct{}  `sql:"event"`
-	ID            int32     `json:"id,omitempty,string"`
-	OrganiserID   int32     `json:"organiserId,string"`
+	ID            int32     `json:"eventID,omitempty,string"`
+	OrganiserID   int32     `json:"organiserID,string"`
 	Name          string    `json:"name"`
 	Location      string    `json:"location"`
 	StartDate     time.Time `json:"startDate"`
@@ -35,25 +35,26 @@ type AllEventsRequest struct {
 
 type Map struct {
 	tableName struct{} `sql:"map"`
-	ID        int32    `json:"id,omitempty,string"`
+	ID        int32    `json:"mapID,omitempty,string"`
 	Type      string   `json:"type"`
 	Zoom      int32    `json:"zoom,string"`
-	EventID   int32    `json:"eventId,string"`
+	EventID   int32    `json:"eventID,string"`
 	Lat       float64  `json:"lat,string"`
 	Lng       float64  `json:"lng,string"`
 }
 
 type Region struct {
 	tableName struct{} `sql:"region"`
-	ID        int32    `json:"id,omitempty,string"`
+	ID        int32    `json:"regionID,omitempty,string"`
 	Name      string   `json:"name"`
 	Type      string   `json:"type"`
+	UUID      string   `json:"uuid,omitempty"`
 	Major     int32    `json:"major,string,omitempty"`
 	Minor     int32    `json:"minor,string,omitempty"`
 	Lat       float64  `json:"lat,string,omitempty"`
 	Lng       float64  `json:"lng,string,omitempty"`
 	Radius    int32    `json:"radius,string,omitempty"`
-	EventID   int32    `json:"eventId,string"`
+	EventID   int32    `json:"eventID,string"`
 }
 
 var dbUsername string
