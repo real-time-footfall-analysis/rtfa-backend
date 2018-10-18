@@ -14,13 +14,13 @@ type live_db_adapter interface {
 	getLiveHeatMap(event int) (map[string]int, error)
 }
 
-type dynamodb_adapter struct {
+type dynamodbAdaptor struct {
 	db         *dynamodb.DynamoDB
 	streamName string
 }
 
 // initConn opens the connection to the location event kinesis queue
-func (db *dynamodb_adapter) initConn() error {
+func (db *dynamodbAdaptor) initConn() error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-central-1")},
 	)
@@ -36,7 +36,7 @@ func (db *dynamodb_adapter) initConn() error {
 }
 
 // Pre: the event object is valid
-func (db *dynamodb_adapter) getLiveHeatMap(event int) (map[string]int, error) {
+func (db *dynamodbAdaptor) getLiveHeatMap(event int) (map[string]int, error) {
 	params := &dynamodb.ScanInput{
 		TableName: aws.String("current_position"),
 	}

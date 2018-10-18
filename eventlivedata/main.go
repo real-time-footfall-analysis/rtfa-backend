@@ -3,17 +3,12 @@ package eventlivedata
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/gorilla/mux"
 )
 
-var db live_db_adapter = &dynamodb_adapter{}
+var db live_db_adapter = &dynamodbAdaptor{}
 
 func Init(r *mux.Router) {
 
@@ -49,6 +44,7 @@ func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 	return
 }
 
+/*
 func main() {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-central-1")},
@@ -60,9 +56,9 @@ func main() {
 	}
 	// Create DynamoDB client
 	svc := dynamodb.New(sess)
-	/*proj := expression.NamesList(expression.Name("pKey"), expression.Name("regionId"), expression.Name("eventId"))
-	expr, err := expression.NewBuilder().WithProjection(proj).Build()
-	*/
+	//proj := expression.NamesList(expression.Name("pKey"), expression.Name("regionId"), expression.Name("eventId"))
+	//expr, err := expression.NewBuilder().WithProjection(proj).Build()
+
 	if err != nil {
 		fmt.Println("Got error creating expression:")
 		fmt.Println(err.Error())
@@ -89,3 +85,5 @@ func main() {
 	}
 	fmt.Print(region_count)
 }
+
+*/
