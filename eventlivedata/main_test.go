@@ -50,12 +50,10 @@ type dummy_db struct {
 	t   *testing.T
 }
 
-// initConn opens the connection to the location event kinesis queue
 func (dq *dummy_db) initConn() error {
 	return nil
 }
 
-// Pre: the event object is valid
 func (db *dummy_db) getLiveHeatMap(event int) (map[string]int, error) {
 	if db.id != event {
 		db.t.Errorf("wrong event id")
