@@ -21,8 +21,8 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/map", postEventMapHandler).Methods("POST")
-	r.HandleFunc("/events/{eventId}/regions", postRegionsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}/regions", getAllRegionsHandler).Methods("GET")
+	r.HandleFunc("/events/{eventId}/regions", postRegionsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}/regions/{regionId}", getRegionHandler).Methods("GET")
 }
 
