@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/real-time-footfall-analysis/rtfa-backend/locationupdate"
+
 	"github.com/gorilla/mux"
 	"github.com/real-time-footfall-analysis/rtfa-backend/eventlivedata"
 	"github.com/real-time-footfall-analysis/rtfa-backend/eventstaticdata"

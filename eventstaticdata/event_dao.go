@@ -1,72 +1,198 @@
 package eventstaticdata
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
-	// Postgres driver
-	_ "github.com/lib/pq"
+	"github.com/go-pg/pg"
 )
 
 const (
 	DATABASE_HOST string = "rtfa-crowd-static-data.chh9za0s2bso.eu-central-1.rds.amazonaws.com"
+	DATABASE_PORT int    = 5432
 	DATABASE_NAME string = "rtfa_crowd_static_data"
 )
 
 type Event struct {
-	ID            string `json:"id"`
-	OrganiserID   string `json:"organiserId"`
-	Name          string `json:"name"`
-	Location      string `json:"location"`
-	StartDate     string `json:"startDate"`
-	EndDate       string `json:"endDate"`
-	MaxAttendance string `json:"maxAttendance"`
+	tableName     struct{}  `sql:"event"`
+	ID            int32     `json:"id,omitempty,string"`
+	OrganiserID   int32     `json:"organiserId,string"`
+	Name          string    `json:"name"`
+	Location      string    `json:"location"`
+	StartDate     time.Time `json:"startDate"`
+	EndDate       time.Time `json:"endDate"`
+	IndoorOutdoor string    `json:"indoorOutdoor"`
+	MaxAttendance int64     `json:"maxAttendance,string"`
+	CoverPhotoURL string    `json:"coverPhotoUrl"`
+}
+
+type AllEventsRequest struct {
+	OrganiserID int32 `json:"organiserId,string"`
 }
 
 type Map struct {
-	EventID     string `json:"eventId"`
-	ImageURL    string `json:"imageUrl"`
-	ImageWidth  string `json:"imageWidth"`
-	ImageHeight string `json:"imageHeight"`
-	MapWidth    string `json:"mapWidth"`
+	tableName struct{} `sql:"map"`
+	ID        int32    `json:"id,omitempty,string"`
+	Type      string   `json:"type"`
+	Zoom      int32    `json:"zoom,string"`
+	EventID   int32    `json:"eventId,string"`
+	Lat       float64  `json:"lat,string"`
+	Lng       float64  `json:"lng,string"`
 }
 
-var db *sql.DB
+type Region struct {
+	tableName struct{} `sql:"region"`
+	ID        int32    `json:"id,omitempty,string"`
+	Name      string   `json:"name"`
+	Type      string   `json:"type"`
+	Major     int32    `json:"major,string,omitempty"`
+	Minor     int32    `json:"minor,string,omitempty"`
+	Lat       float64  `json:"lat,string,omitempty"`
+	Lng       float64  `json:"lng,string,omitempty"`
+	Radius    int32    `json:"radius,string,omitempty"`
+	EventID   int32    `json:"eventId,string"`
+}
 
-// initConn opens the connection to postgres and sets the global db variable
-func initConn() {
+var dbUsername string
+var dbPassword string
 
-	username := os.Getenv("RTFA_STATICDATA_DB_USER")
-	if username == "" {
+// fetchEnvVars fetches the environment variables used for database connection
+func fetchEnvVars() {
+
+	dbUsername = os.Getenv("RTFA_STATICDATA_DB_USER")
+	if dbUsername == "" {
 		log.Fatal("RTFA_STATICDATA_DB_USER not set.")
 	}
-	password := os.Getenv("RTFA_STATICDATA_DB_PASSWORD")
-	if password == "" {
+	dbPassword = os.Getenv("RTFA_STATICDATA_DB_PASSWORD")
+	if dbPassword == "" {
 		log.Fatal("RTFA_STATICDATA_DB_PASSWORD not set.")
 	}
 
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s",
-		DATABASE_HOST,
-		username,
-		password,
-		DATABASE_NAME)
+}
 
-	openedDb, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+func connectDB() *pg.DB {
 
-	db = openedDb
+	return pg.Connect(&pg.Options{
+		Addr:     fmt.Sprintf("%s:%d", DATABASE_HOST, DATABASE_PORT),
+		User:     dbUsername,
+		Password: dbPassword,
+		Database: DATABASE_NAME,
+	})
 
 }
 
-// Pre: the event object is valid
-func addEvent(event *Event) (*Event, error) {
+// All the add{Object} functions assume that the object is valid
+// and modify the object, inserting the new ID
 
-	// TODO: and insert into database
-	// probably with a raw SQL call
-	return nil, nil
+func addEvent(event *Event) error {
+
+	db := connectDB()
+	defer db.Close()
+
+	err := db.Insert(event)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
+
+func getAllEventsByOrganiserID(organiserID int32) ([]Event, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var events []Event
+
+	err := db.Model(&events).Where("organiser_id = ?", organiserID).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return events, nil
+
+}
+
+func getEventByID(id int) (*Event, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	event := &Event{ID: int32(id)}
+	err := db.Select(event)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return event, nil
+
+}
+
+func addMap(eventMap *Map) error {
+
+	db := connectDB()
+	defer db.Close()
+
+	err := db.Insert(eventMap)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
+
+func addRegions(regions *[]Region) error {
+
+	db := connectDB()
+	defer db.Close()
+
+	_, err := db.Model(regions).Insert()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
+
+func getRegionsByEventID(eventID int) (*[]Region, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var regions = make([]Region, 0)
+	err := db.Model(&regions).Where("event_id = ?", eventID).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &regions, nil
+
+}
+
+func getRegionByID(eventID, regionID int) (*Region, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var region Region
+
+	err := db.Model(&region).Where("id = ?", regionID).Where("event_id = ?", eventID).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &region, nil
 
 }

@@ -3,9 +3,10 @@ package locationupdate
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // Init registers the endpoints exposed by this package
@@ -22,9 +23,9 @@ func Init(r *mux.Router) {
 
 type update struct {
 	UUID     string `json:"uuid"`
-	EventID  int    `json:"eventId"`
-	RegionID int    `json:"regionId"`
-	Entering bool   `json:"entering"`
+	EventID  int    `json:"eventId,string"`
+	RegionID int    `json:"regionId,string"`
+	Entering bool   `json:"entering,string"`
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
