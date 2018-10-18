@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var db liveDbAdapter = &dynamoDbAdaptor{}
@@ -14,19 +15,21 @@ func Init(r *mux.Router) {
 
 	db.initConn()
 
-	r.HandleFunc("/live/heatmap", heatmapHandler).Methods("GET")
-}
-
-type mapRequest struct {
-	EventID int32 `json:"event_id,string"`
+	r.HandleFunc("/live/heatmap/{eventId}", heatmapHandler).Methods("GET")
 }
 
 func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
-	decoder := json.NewDecoder(request.Body)
 
-	var req mapRequest
-
-	err := decoder.Decode(&req)
+	vars := mux.Vars(request)
+	id, err := strconv.Atoi(vars["eventId"])
+	if err != nil {
+		log.Println("Cannot decode request event id:", err)
+		http.Error(
+			writer,
+			fmt.Sprintf("Failed to decode request: %s", err),
+			http.StatusBadRequest)
+		return
+	}
 
 	if err != nil {
 		log.Println("Cannot decode request:", err)
@@ -37,7 +40,7 @@ func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	heatMap, _ := db.getLiveHeatMap(int(req.EventID))
+	heatMap, _ := db.getLiveHeatMap(id)
 
 	json.NewEncoder(writer).Encode(heatMap)
 
