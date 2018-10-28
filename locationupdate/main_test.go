@@ -3,7 +3,6 @@ package locationupdate
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +10,9 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 var router *mux.Router
@@ -53,10 +55,11 @@ func TestEmptyLocationUpdate(t *testing.T) {
 func TestLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 	update := update{
-		UUID:     "Test-UUID",
-		EventID:  0,
-		RegionID: 1,
-		Entering: true,
+		UUID:      "Test-UUID",
+		EventID:   0,
+		RegionID:  1,
+		Entering:  true,
+		Timestamp: time.Now().Unix(),
 	}
 
 	queue = &dummy_queue{update: update, t: t}
