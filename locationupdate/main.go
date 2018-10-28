@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -22,10 +23,11 @@ func Init(r *mux.Router) {
 }
 
 type update struct {
-	UUID     string `json:"uuid"`
-	EventID  int    `json:"eventId"`
-	RegionID int    `json:"regionId"`
-	Entering bool   `json:"entering"`
+	UUID      string `json:"uuid"`
+	EventID   int    `json:"eventId"`
+	RegionID  int    `json:"regionId"`
+	Entering  bool   `json:"entering"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
@@ -43,6 +45,9 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 			http.StatusBadRequest)
 		return
 	}
+
+	// TODO: replace with actual timestamp from frontend
+	update.Timestamp = time.Now().Unix()
 
 	queue.addLocationUpdate(&update)
 
