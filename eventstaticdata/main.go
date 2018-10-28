@@ -17,6 +17,8 @@ func Init(r *mux.Router) {
 
 	fetchEnvVars()
 
+	r.Methods("OPTIONS").HandlerFunc(preflightHandle)
+
 	r.HandleFunc("/events", getEventsHandler).Queries("organiserId", "{[0-9]*?}").Methods("GET")
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
@@ -24,6 +26,12 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/events/{eventId}/regions", getAllRegionsHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/regions", postRegionsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}/regions/{regionId}", getRegionHandler).Methods("GET")
+}
+
+func preflightHandle(w http.ResponseWriter, r *http.Request) {
+
+	setAccessControlHeaders(w)
+
 }
 
 func getEventsHandler(w http.ResponseWriter, r *http.Request) {
