@@ -55,11 +55,11 @@ func TestEmptyLocationUpdate(t *testing.T) {
 func TestLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 	update := update{
-		UUID:      "Test-UUID",
-		EventID:   0,
-		RegionID:  1,
-		Entering:  true,
-		Timestamp: time.Now().Unix(),
+		UUID:       "Test-UUID",
+		EventID:    0,
+		RegionID:   1,
+		Entering:   true,
+		OccurredAt: int(time.Now().Unix()),
 	}
 
 	queue = &dummy_queue{update: update, t: t}
