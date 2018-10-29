@@ -166,6 +166,20 @@ func addRegions(regions *[]Region) error {
 
 }
 
+func updateRegion(region *Region) error {
+
+	db := connectDB()
+	defer db.Close()
+
+	if err := db.Update(region); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
+
 func getRegionsByEventID(eventID int) (*[]Region, error) {
 
 	db := connectDB()
