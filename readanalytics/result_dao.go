@@ -49,5 +49,9 @@ func fetchAnalyticsResult(eventID, taskID int) (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	delete(m, DYNAMO_PK)
+	m["eventID"] = eventID
+	m["taskID"] = taskID
+
 	return m, nil
 }
