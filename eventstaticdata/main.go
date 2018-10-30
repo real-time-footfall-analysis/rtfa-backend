@@ -20,6 +20,7 @@ func Init(r *mux.Router) {
 	r.Methods("OPTIONS").HandlerFunc(preflightHandle)
 
 	r.HandleFunc("/events", getEventsHandler).Queries("organiserId", "{[0-9]*?}").Methods("GET")
+	r.HandleFunc("/events", getAllEventsHandler).Methods("GET")
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/map", postEventMapHandler).Methods("POST")
@@ -32,6 +33,23 @@ func Init(r *mux.Router) {
 func preflightHandle(w http.ResponseWriter, r *http.Request) {
 
 	setAccessControlHeaders(w)
+
+}
+
+func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	events, err := getAllEvents()
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get all events: %s", err),
+			http.StatusInternalServerError)
+		return
+	}
+
+	setAccessControlHeaders(w)
+	json.NewEncoder(w).Encode(events)
 
 }
 
