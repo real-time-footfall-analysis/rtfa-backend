@@ -103,6 +103,23 @@ func addEvent(event *Event) error {
 
 }
 
+func getAllEvents() ([]Event, error) {
+
+	db := connectDB()
+	defer db.Close()
+
+	var events []Event
+
+	err := db.Model(&events).Select()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return events, nil
+
+}
+
 func getAllEventsByOrganiserID(organiserID int32) ([]Event, error) {
 
 	db := connectDB()
