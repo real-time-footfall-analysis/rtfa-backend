@@ -27,6 +27,7 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/events/{eventId}/regions", getAllRegionsHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/regions", postRegionsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}/regions/{regionId}", getRegionHandler).Methods("GET")
+	r.HandleFunc("/events/{eventId}/regions/{regionId}", updateRegionHandler).Methods("PUT")
 }
 
 func preflightHandle(w http.ResponseWriter, r *http.Request) {
@@ -365,6 +366,97 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	region, err := getRegionByID(eventID, regionID)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get region by event ID: %s", err),
+			http.StatusInternalServerError)
+		return
+	}
+
+	setAccessControlHeaders(w)
+	json.NewEncoder(w).Encode(region)
+
+}
+
+func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	eventIDStr := vars["eventId"]
+	regionIDStr := vars["regionId"]
+
+	if eventIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing event ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	if regionIDStr == "" {
+		http.Error(
+			w,
+			fmt.Sprint("Missing region ID"),
+			http.StatusBadRequest)
+		return
+	}
+
+	eventID, err := strconv.Atoi(eventIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse event id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	regionID, err := strconv.Atoi(regionIDStr)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse region id: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	var region Region
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&region)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to unmarshall region: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	err = validateRegion(&region, eventID)
+	if err != nil {
+		log.Println(err)
+		http.Error(
+			w,
+			fmt.Sprintf("Invalid Region: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	if region.ID != int32(regionID) {
+		http.Error(
+			w,
+			fmt.Sprintf(
+				"Region ID in request (%d) does not match that in the region object (%d)",
+				regionID,
+				region.ID),
+			http.StatusBadRequest)
+		return
+	}
+
+	err = updateRegion(&region)
 	if err != nil {
 		log.Println(err)
 		http.Error(
