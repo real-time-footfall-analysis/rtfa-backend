@@ -19,8 +19,8 @@ func Init(r *mux.Router) {
 
 	r.Methods("OPTIONS").HandlerFunc(preflightHandle)
 
-	r.HandleFunc("/events", getAllEventsHandler).Methods("GET")
 	r.HandleFunc("/events", getEventsHandler).Queries("organiserId", "{[0-9]*?}").Methods("GET")
+	r.HandleFunc("/events", getAllEventsHandler).Methods("GET")
 	r.HandleFunc("/events", postEventsHandler).Methods("POST")
 	r.HandleFunc("/events/{eventId}", getEventHandler).Methods("GET")
 	r.HandleFunc("/events/{eventId}/map", postEventMapHandler).Methods("POST")
