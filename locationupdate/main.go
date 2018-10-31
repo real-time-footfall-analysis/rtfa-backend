@@ -67,7 +67,6 @@ func notPresentCheck(writer http.ResponseWriter, update update) bool {
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	decoder := json.NewDecoder(request.Body)
-	decoder.DisallowUnknownFields()
 
 	var update update
 

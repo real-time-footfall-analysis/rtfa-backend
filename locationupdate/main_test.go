@@ -79,43 +79,6 @@ func TestUUIDLengthLocationUpdate(t *testing.T) {
 	}
 }
 
-func TestExtraFieldsLocationUpdate(t *testing.T) {
-	var logBuf bytes.Buffer
-	log.SetOutput(&logBuf)
-	defer log.SetOutput(os.Stderr)
-
-	uuid := "Test-UUID"
-	eventId := 0
-	regionID := 1
-	entering := true
-	occurredAt := int(time.Now().Unix())
-	update := update{
-		UUID:       &uuid,
-		EventID:    &eventId,
-		RegionID:   &regionID,
-		Entering:   &entering,
-		OccurredAt: &occurredAt,
-	}
-
-	queue = &dummy_queue{update: update, t: t}
-
-	var buf bytes.Buffer
-	buf.WriteString(`{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true,"occurredAt":1540945705,"key":"value"}`)
-	req, _ := http.NewRequest("POST", "/update", &buf)
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
-	expected := "Failed to decode update: json: unknown field \"key\""
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
-	}
-
-	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} Cannot decode update: json: unknown field "key"\n$`)
-	if !r.MatchString(logBuf.String()) {
-		t.Errorf("Expected Log output for %s", expected)
-	}
-}
-
 func TestIncompleteLocationUpdate1(t *testing.T) {
 	var logBuf bytes.Buffer
 	log.SetOutput(&logBuf)
