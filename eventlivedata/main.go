@@ -3,10 +3,12 @@ package eventlivedata
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
 var db liveDbAdapter = &dynamoDbAdaptor{}
@@ -19,6 +21,8 @@ func Init(r *mux.Router) {
 }
 
 func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
+
+	utils.SetAccessControlHeaders(writer)
 
 	vars := mux.Vars(request)
 	id, err := strconv.Atoi(vars["eventId"])
