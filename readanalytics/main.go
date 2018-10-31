@@ -19,6 +19,8 @@ func Init(r *mux.Router) {
 
 func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 
+	utils.SetAccessControlHeaders(w)
+
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
 	taskIDStr := vars["taskId"]
@@ -69,7 +71,6 @@ func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(result)
 
 }

@@ -31,6 +31,8 @@ func Init(r *mux.Router) {
 
 func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 
+	utils.SetAccessControlHeaders(w)
+
 	events, err := getAllEvents()
 	if err != nil {
 		log.Println(err)
@@ -41,12 +43,13 @@ func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(events)
 
 }
 
 func getEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	organiserID, err := strconv.Atoi(r.FormValue("organiserId"))
 	if err != nil {
@@ -68,12 +71,13 @@ func getEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(events)
 
 }
 
 func postEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -109,12 +113,13 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
 
 func getEventHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	idStr := vars["eventId"]
@@ -147,12 +152,13 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
 
 func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -210,12 +216,13 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(eventMap)
 
 }
 
 func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -273,12 +280,13 @@ func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
 
 func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -311,12 +319,13 @@ func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
 
 func getRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -368,12 +377,13 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(region)
 
 }
 
 func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -459,7 +469,6 @@ func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(region)
 
 }
