@@ -35,15 +35,6 @@ func heatmapHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err != nil {
-		log.Println("Cannot decode request:", err)
-		http.Error(
-			writer,
-			fmt.Sprintf("Failed to decode request: %s", err),
-			http.StatusBadRequest)
-		return
-	}
-
 	heatMap, _ := db.getLiveHeatMap(id)
 
 	json.NewEncoder(writer).Encode(heatMap)
