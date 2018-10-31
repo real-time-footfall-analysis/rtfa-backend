@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
 func Init(r *mux.Router) {
@@ -68,6 +69,7 @@ func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	utils.SetAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(result)
 
 }
