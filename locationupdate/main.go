@@ -3,11 +3,10 @@ package locationupdate
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 // Init registers the endpoints exposed by this package
@@ -22,12 +21,48 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/update", updateHandler).Methods("POST")
 }
 
+const (
+	UUID_MIN_LENGTH = 5
+)
+
 type update struct {
-	UUID       string `json:"uuid"`
-	EventID    int    `json:"eventId"`
-	RegionID   int    `json:"regionId"`
-	Entering   bool   `json:"entering"`
-	OccurredAt int    `json:"occurredAt"`
+	UUID       *string `json:"uuid"`
+	EventID    *int    `json:"eventId"`
+	RegionID   *int    `json:"regionId"`
+	Entering   *bool   `json:"entering"`
+	OccurredAt *int    `json:"occurredAt"`
+}
+
+func notPresentError(writer http.ResponseWriter, name string) {
+	log.Println(name + " not present in update")
+	http.Error(
+		writer,
+		fmt.Sprintf(name+" not present in update"),
+		http.StatusBadRequest)
+}
+
+func notPresentCheck(writer http.ResponseWriter, update update) bool {
+	if update.UUID == nil {
+		notPresentError(writer, "UUID")
+		return true
+	}
+	if update.EventID == nil {
+		notPresentError(writer, "EventID")
+		return true
+	}
+	if update.RegionID == nil {
+		notPresentError(writer, "RegionID")
+		return true
+	}
+	if update.Entering == nil {
+		notPresentError(writer, "Entering")
+		return true
+	}
+	if update.OccurredAt == nil {
+		notPresentError(writer, "OccurredAt")
+		return true
+	}
+	return false
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
@@ -46,8 +81,31 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if notPresentCheck(writer, update) {
+		return
+	}
+
+	if len(*update.UUID) < UUID_MIN_LENGTH {
+		log.Println("UUID less than 5 characters in update")
+		http.Error(
+			writer,
+			fmt.Sprintf("UUID less than 5 characters"),
+			http.StatusBadRequest)
+		return
+	}
+
+	if *update.EventID < 0 {
+		log.Println("Invalid EventId in update")
+		http.Error(
+			writer,
+			fmt.Sprintf("Invalid EventId"),
+			http.StatusBadRequest)
+		return
+	}
+
 	// TODO: replace with actual timestamp from frontend
-	update.OccurredAt = int(time.Now().Unix())
+	now := int(time.Now().Unix())
+	update.OccurredAt = &now
 
 	queue.addLocationUpdate(&update)
 
