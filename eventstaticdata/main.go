@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
 // Init registers the endpoints exposed by this package
@@ -16,8 +17,6 @@ import (
 func Init(r *mux.Router) {
 
 	fetchEnvVars()
-
-	r.Methods("OPTIONS").HandlerFunc(preflightHandle)
 
 	r.HandleFunc("/events", getEventsHandler).Queries("organiserId", "{[0-9]*?}").Methods("GET")
 	r.HandleFunc("/events", getAllEventsHandler).Methods("GET")
@@ -30,13 +29,9 @@ func Init(r *mux.Router) {
 	r.HandleFunc("/events/{eventId}/regions/{regionId}", updateRegionHandler).Methods("PUT")
 }
 
-func preflightHandle(w http.ResponseWriter, r *http.Request) {
-
-	setAccessControlHeaders(w)
-
-}
-
 func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	events, err := getAllEvents()
 	if err != nil {
@@ -48,12 +43,13 @@ func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(events)
 
 }
 
 func getEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	organiserID, err := strconv.Atoi(r.FormValue("organiserId"))
 	if err != nil {
@@ -75,12 +71,13 @@ func getEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(events)
 
 }
 
 func postEventsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -116,12 +113,13 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
 
 func getEventHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	idStr := vars["eventId"]
@@ -154,12 +152,13 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(event)
 
 }
 
 func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -217,12 +216,13 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(eventMap)
 
 }
 
 func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -280,12 +280,13 @@ func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
 
 func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -318,12 +319,13 @@ func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(regions)
 
 }
 
 func getRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -375,12 +377,13 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(region)
 
 }
 
 func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
+
+	utils.SetAccessControlHeaders(w)
 
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
@@ -466,15 +469,6 @@ func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAccessControlHeaders(w)
 	json.NewEncoder(w).Encode(region)
-
-}
-
-func setAccessControlHeaders(w http.ResponseWriter) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Request-Headers, Access-Control-Request-Method, Connection, Host, Origin, User-Agent, Referer, Cache-Control, X-header")
 
 }
