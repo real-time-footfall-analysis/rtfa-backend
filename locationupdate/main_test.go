@@ -84,7 +84,20 @@ func TestExtraFieldsLocationUpdate(t *testing.T) {
 	log.SetOutput(&logBuf)
 	defer log.SetOutput(os.Stderr)
 
-	queue = &dummy_queue{update: update{}, t: t}
+	uuid := "Test-UUID"
+	eventId := 0
+	regionID := 1
+	entering := true
+	occurredAt := int(time.Now().Unix())
+	update := update{
+		UUID:       &uuid,
+		EventID:    &eventId,
+		RegionID:   &regionID,
+		Entering:   &entering,
+		OccurredAt: &occurredAt,
+	}
+
+	queue = &dummy_queue{update: update, t: t}
 
 	var buf bytes.Buffer
 	buf.WriteString(`{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true,"occurredAt":1540945705,"key":"value"}`)
