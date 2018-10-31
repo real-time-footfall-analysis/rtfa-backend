@@ -26,14 +26,14 @@ func initialize(a *App) {
 func initializeRoutes(a *App) {
 	a.Router.HandleFunc("/", standardHandler)
 	a.Router.HandleFunc("/api/health", healthHandler).Methods("GET")
-	a.Router.Methods("OPTIONS").HandlerFunc(preflightHandle)
+	a.Router.Methods("OPTIONS").HandlerFunc(preflightHandler)
 	eventstaticdata.Init(a.Router)
 	locationupdate.Init(a.Router)
 	eventlivedata.Init(a.Router)
 	readanalytics.Init(a.Router)
 }
 
-func preflightHandle(w http.ResponseWriter, r *http.Request) {
+func preflightHandler(w http.ResponseWriter, r *http.Request) {
 
 	utils.SetAccessControlHeaders(w)
 
