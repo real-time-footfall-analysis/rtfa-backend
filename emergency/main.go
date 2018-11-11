@@ -31,7 +31,7 @@ var db emergencyDbAdapter = &dynamoDbAdaptor{}
 
 func Init(r *mux.Router) {
 	db.initConn()
-	r.HandleFunc("/emergency_update", updateHandler).Methods("POST")
+	r.HandleFunc("/emergency-update", updateHandler).Methods("POST")
 	r.HandleFunc("/live/emergency/{eventId}/{lastPoll}", requestHandler).Methods("GET")
 }
 
@@ -43,33 +43,13 @@ func notPresentError(writer http.ResponseWriter, name string) {
 		http.StatusBadRequest)
 }
 
-func notPresentCheck(writer http.ResponseWriter, update emergency_request) bool {
-	if update.UUID == "" {
-		notPresentError(writer, "UUID")
-		return true
-	}
-	if update.EventId == 0 {
-		notPresentError(writer, "EventID")
-		return true
-	}
-	if update.RegionIds == nil {
-		notPresentError(writer, "RegionID")
-		return true
-	}
-	if update.OccurredAt == 0 {
-		notPresentError(writer, "OccurredAt")
-		return true
-	}
-	return false
-}
-
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	decoder := json.NewDecoder(request.Body)
 
-	var emergency_update emergency_request
+	var emergencyUpdate emergency_request
 
-	err := decoder.Decode(&emergency_update)
-
+	// Try and decode the data
+	err := decoder.Decode(&emergencyUpdate)
 	if err != nil {
 		log.Println("Cannot decode emergency_request:", err)
 		http.Error(
@@ -79,20 +59,32 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if notPresentCheck(writer, emergency_update) {
-		return
-	}
-
-	if len(emergency_update.UUID) < UUID_MIN_LENGTH {
-		log.Println("UUID less than 5 characters in emergency_request")
+	// Check the other fields in the data
+	if emergencyUpdate.UUID == "" || len(emergencyUpdate.UUID) < UUID_MIN_LENGTH {
+		log.Println("uuid field is empty:", err)
 		http.Error(
 			writer,
-			fmt.Sprintf("UUID less than 5 characters"),
+			fmt.Sprintf("uuid field is empty %s", err),
 			http.StatusBadRequest)
 		return
 	}
-
-	if emergency_update.EventId < 0 {
+	if emergencyUpdate.RegionIds == nil {
+		log.Println("RegionIds missing:", err)
+		http.Error(
+			writer,
+			fmt.Sprintf("RegionIds missing: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+	if emergencyUpdate.OccurredAt == 0 {
+		log.Println("occurredAt timestamp missing", err)
+		http.Error(
+			writer,
+			fmt.Sprintf("occurredAt timestamp missing: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+	if emergencyUpdate.EventId <= 0 {
 		log.Println("Invalid EventId in emergency_request")
 		http.Error(
 			writer,
@@ -102,7 +94,10 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Send the item
-	db.sendItem(emergency_update)
+	err = db.sendItem(emergencyUpdate)
+	if err != nil {
+		log.Println(err.Error())
+	}
 }
 
 func requestHandler(writer http.ResponseWriter, request *http.Request) {
@@ -116,17 +111,32 @@ func requestHandler(writer http.ResponseWriter, request *http.Request) {
 	// Convert the eventId to an int
 	eventId, err := parseRequestArgs(vars, "eventId", writer)
 	if err != nil {
+		log.Println("Error parsing eventId")
+		http.Error(
+			writer,
+			fmt.Sprintf("Invalid EventId"),
+			http.StatusBadRequest)
 		return
 	}
 
 	// Convert the last poll timestamp to an int
 	lastPoll, err := parseRequestArgs(vars, "lastPoll", writer)
 	if err != nil {
+		log.Println("Error parsing last poll time")
+		http.Error(
+			writer,
+			fmt.Sprintf("Invalid last poll time"),
+			http.StatusBadRequest)
 		return
 	}
 
 	// Scan the table, parse the result and filter out old events
 	scan, err := db.getTableScan()
+	if err != nil {
+		log.Println("Error getting the scan of the emergencies DynamoDB table")
+	}
+
+	// Parse the scan and remove old values
 	parsed := parseScan(scan)
 	recents := extractRecentUpdates(parsed, eventId, lastPoll)
 
@@ -152,29 +162,39 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 
 	// Parse the table scanned items
 	for _, row := range tableScan.Items {
-		// Extract the data
-		eventId, _ := strconv.Atoi(*(*row["eventId"]).N)
+		// Parse the eventId
+		eventId, err := strconv.Atoi(*(*row["eventId"]).N)
+		if err != nil {
+			continue
+		}
+
+		// Parse the timestamp
+		occurredAt, err := strconv.Atoi(*(*row["occurredAt"]).N)
+		if err != nil {
+			continue
+		}
+
+		// Extract the uuid and sorted/dealt with boolean
 		uuid := *(*row["uuid"]).S
 		sorted := *(*row["sorted"]).BOOL
-		occurredAt, _ := strconv.Atoi(*(*row["occurredAt"]).N)
 
 		// Parse the regionIds
-		unparsed_regions := (*(row["regionIds"])).L
+		unparsedRegions := (*(row["regionIds"])).L
 		var regions []int
-		for _, reg := range unparsed_regions {
+		for _, reg := range unparsedRegions {
 			regionId, _ := strconv.Atoi(*reg.N)
 			regions = append(regions, regionId)
 		}
 
 		// Insert into a new emergency request
-		parsed_row := emergency_request{EventId: eventId,
+		parsedRow := emergency_request{EventId: eventId,
 			UUID:       uuid,
 			OccurredAt: occurredAt,
 			RegionIds:  regions,
 			Sorted:     sorted}
 
 		// Add to final list
-		parsed = append(parsed, parsed_row)
+		parsed = append(parsed, parsedRow)
 	}
 
 	return parsed

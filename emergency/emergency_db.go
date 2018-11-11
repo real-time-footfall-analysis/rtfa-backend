@@ -31,8 +31,8 @@ func (db *dynamoDbAdaptor) initConn() error {
 		Region: aws.String("eu-central-1")},
 	)
 	if err != nil {
-		fmt.Println("Got error creating session:")
-		fmt.Println(err.Error())
+		log.Println("Got error creating session:")
+		log.Println(err.Error())
 		os.Exit(1)
 	}
 	// Create DynamoDB client
