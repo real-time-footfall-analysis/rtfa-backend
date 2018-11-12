@@ -24,7 +24,7 @@ type emergency_request struct {
 	EventId    int    `json:"eventId"`
 	RegionIds  []int  `json:"regionIds"`
 	OccurredAt int    `json:"occurredAt"`
-	Sorted     bool   `json:"sorted"`
+	DealtWith  bool   `json:"dealtWith"`
 }
 
 var db emergencyDbAdapter = &dynamoDbAdaptor{}
@@ -33,14 +33,6 @@ func Init(r *mux.Router) {
 	db.initConn()
 	r.HandleFunc("/emergency-update", updateHandler).Methods("POST")
 	r.HandleFunc("/live/emergency/{eventId}/{lastPoll}", requestHandler).Methods("GET")
-}
-
-func notPresentError(writer http.ResponseWriter, name string) {
-	log.Println(name + " not present in emergency_request")
-	http.Error(
-		writer,
-		fmt.Sprintf(name+" not present in emergency_request"),
-		http.StatusBadRequest)
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
@@ -174,9 +166,9 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 			continue
 		}
 
-		// Extract the uuid and sorted/dealt with boolean
+		// Extract the uuid and dealtWith with boolean
 		uuid := *(*row["uuid"]).S
-		sorted := *(*row["sorted"]).BOOL
+		dealtWith := *(*row["dealtWith"]).BOOL
 
 		// Parse the regionIds
 		unparsedRegions := (*(row["regionIds"])).L
@@ -191,7 +183,7 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 			UUID:       uuid,
 			OccurredAt: occurredAt,
 			RegionIds:  regions,
-			Sorted:     sorted}
+			DealtWith:  dealtWith}
 
 		// Add to final list
 		parsed = append(parsed, parsedRow)
