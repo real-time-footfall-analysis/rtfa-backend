@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/real-time-footfall-analysis/rtfa-backend/emergency"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -31,6 +32,7 @@ func initializeRoutes(a *App) {
 	locationupdate.Init(a.Router)
 	eventlivedata.Init(a.Router)
 	readanalytics.Init(a.Router)
+	emergency.Init(a.Router)
 }
 
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
