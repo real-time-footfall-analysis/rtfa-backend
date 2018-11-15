@@ -20,11 +20,12 @@ const (
 )
 
 type emergency_request struct {
-	UUID       string `json:"uuid"`
-	EventId    int    `json:"eventId"`
-	RegionIds  []int  `json:"regionIds"`
-	OccurredAt int    `json:"occurredAt"`
-	DealtWith  bool   `json:"dealtWith"`
+	UUID        string `json:"uuid"`
+	EventId     int    `json:"eventId"`
+	RegionIds   []int  `json:"regionIds"`
+	OccurredAt  int    `json:"occurredAt"`
+	DealtWith   bool   `json:"dealtWith"`
+	Description string `json:"description"`
 }
 
 var db emergencyDbAdapter = &dynamoDbAdaptor{}
@@ -170,6 +171,14 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 		uuid := *(*row["uuid"]).S
 		dealtWith := *(*row["dealtWith"]).BOOL
 
+		// Extract the description if present
+		var description string
+		if (*row["description"]).S != nil {
+			description = *(*row["description"]).S
+		} else {
+			description = ""
+		}
+
 		// Parse the regionIds
 		unparsedRegions := (*(row["regionIds"])).L
 		var regions []int
@@ -180,10 +189,11 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 
 		// Insert into a new emergency request
 		parsedRow := emergency_request{EventId: eventId,
-			UUID:       uuid,
-			OccurredAt: occurredAt,
-			RegionIds:  regions,
-			DealtWith:  dealtWith}
+			UUID:        uuid,
+			OccurredAt:  occurredAt,
+			RegionIds:   regions,
+			DealtWith:   dealtWith,
+			Description: description}
 
 		// Add to final list
 		parsed = append(parsed, parsedRow)

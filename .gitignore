@@ -1,2 +1,8 @@
 # Mac folder files
 .DS_Store
+
+# Dep packages
+vendor/
+
+#Goland files
+.idea/

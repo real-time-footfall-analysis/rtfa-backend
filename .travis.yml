@@ -3,13 +3,19 @@ sudo: required
 language: go 
 
 go:
-  - "1.8.3"
+  - "1.11.2"
+
+install:
+  - echo "Nothing to install outside container"
 
 services:
   - docker
 
 before_install:
   - chmod +x deploy.sh
+
+install:
+  - echo "Nothing to install outside of container."
 
 script:
   - docker build -t rtfa-backend . $(printenv | grep -E '^IMAGE_' | sed 's/IMAGE_/--build-arg /g')
