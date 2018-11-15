@@ -28,9 +28,9 @@ func TestGETLocationWithValues(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "[{\"uuid\":\"000000000000\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":99,\"dealtWith\":false}]"
+	expected := "[{\"uuid\":\"test\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":99,\"dealtWith\":false,\"description\":\"test\"}]"
 	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected an empty body. Got %s", body)
+		t.Errorf("Expected %s. Got %s", expected, body)
 	}
 }
 
@@ -88,10 +88,11 @@ func TestLocationUpdateMissingTimestamp(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:      "Test-UUID",
-		EventId:   99,
-		RegionIds: []int{99, 99, 99},
-		DealtWith: false,
+		UUID:        "Test-UUID",
+		EventId:     99,
+		RegionIds:   []int{99, 99, 99},
+		DealtWith:   false,
+		Description: "Test-emergency",
 	}
 
 	err := json.NewEncoder(&buf).Encode(&update)
@@ -130,10 +131,11 @@ func TestLocationUpdateMissingEventId(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:       "Test-UUID",
-		RegionIds:  []int{99, 99, 99},
-		DealtWith:  false,
-		OccurredAt: int(time.Now().Unix()),
+		UUID:        "Test-UUID",
+		RegionIds:   []int{99, 99, 99},
+		DealtWith:   false,
+		OccurredAt:  int(time.Now().Unix()),
+		Description: "",
 	}
 
 	err := json.NewEncoder(&buf).Encode(&update)
@@ -179,7 +181,7 @@ func (db *dummy_db) makeDummyEntry() {
 func (db *dummy_db) getTableScan() (*dynamodb.ScanOutput, error) {
 	// Make a fake table and insert a row
 	tableScan := new(dynamodb.ScanOutput)
-	row := db.makeDynamoDbRow("99", "000000000000", false)
+	row := db.makeDynamoDbRow("99", "test", false)
 	tableScan.Items = append(tableScan.Items, row)
 
 	return tableScan, nil
@@ -199,6 +201,7 @@ func (db *dummy_db) makeDynamoDbRow(n string, s string, b bool) map[string]*dyna
 	uuid := dynamodb.AttributeValue{}
 	uuid.S = &s
 	row["uuid"] = &uuid
+	row["description"] = &uuid
 
 	// Set the boolean dealt with
 	dealtWith := dynamodb.AttributeValue{}
