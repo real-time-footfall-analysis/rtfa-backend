@@ -1,0 +1,8 @@
+vendor/
+.git/
+README.md
+.travis.yml
+.gitignore
+.git
+.DS_Store
+.idea/

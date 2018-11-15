@@ -1,19 +1,20 @@
-FROM golang:1.8.3-alpine
+FROM golang:1.11.2-alpine3.8
 
 WORKDIR /go/src/github.com/real-time-footfall-analysis/rtfa-backend/
 
 COPY . .
 
 RUN apk add --no-cache git
+RUN apk add --no-cache gcc
+RUN apk add --no-cache libc-dev
 
-RUN go get -u -d github.com/go-pg/pg
-RUN (cd ../../go-pg/pg/ && git checkout ae5d5e7df4b2e598390e10b66b849c6af94f092b)
+RUN wget -O dep https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64
+RUN echo '287b08291e14f1fae8ba44374b26a2b12eb941af3497ed0ca649253e21ba2f83  dep' | sha256sum -c -
+RUN chmod +x dep
+RUN mv dep /usr/bin/
 
-RUN go get -u github.com/gorilla/mux
-RUN go get -u github.com/aws/aws-sdk-go/aws
-RUN go get -u github.com/aws/aws-sdk-go/aws/session
-RUN go get -u github.com/aws/aws-sdk-go/service/kinesis
-RUN go get -u github.com/aws/aws-sdk-go/service/dynamodb
+
+RUN dep ensure
 
 RUN go test -v ./...
 
