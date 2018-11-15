@@ -28,7 +28,7 @@ func TestGETLocationWithValues(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "[{\"uuid\":\"test\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":99,\"dealtWith\":false,\"description\":\"test\"}]"
+	expected := "[{\"uuid\":\"test\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":99,\"dealtWith\":false,\"description\":\"test\",\"position\":{\"lat\":99,\"lng\":99}}]"
 	if body := response.Body.String(); strings.TrimSpace(body) != expected {
 		t.Errorf("Expected %s. Got %s", expected, body)
 	}
@@ -45,7 +45,7 @@ func TestGETNoResults(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 	expected := "[]"
 	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected an empty body. Got %s", body)
+		t.Errorf("Expected an empty list. Got %s", body)
 	}
 }
 
@@ -85,6 +85,31 @@ func TestValidLocationUpdate(t *testing.T) {
 	}
 }
 
+func TestValidLocationUpdateWithoutPosition(t *testing.T) {
+	var buf bytes.Buffer
+
+	update := emergency_request{
+		UUID:       "Test-UUID",
+		EventId:    99,
+		RegionIds:  []int{99, 99, 99},
+		DealtWith:  false,
+		OccurredAt: int(time.Now().Unix()),
+	}
+
+	err := json.NewEncoder(&buf).Encode(&update)
+	if err != nil {
+		t.Error("Unable to encode update struct to json")
+	}
+
+	req, _ := http.NewRequest("POST", "/emergency-update", &buf)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+	if body := response.Body.String(); body != "" {
+		t.Errorf("Expected an empty body. Got %s", body)
+	}
+}
+
 func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 	var buf bytes.Buffer
 
@@ -94,6 +119,10 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 		RegionIds:  []int{99, 99, 99},
 		DealtWith:  false,
 		OccurredAt: int(time.Now().Unix()),
+		Position: &struct {
+			Lat float64 `json:"lat"`
+			Lng float64 `json:"lng"`
+		}{Lat: 1.1, Lng: 1.1},
 	}
 
 	err := json.NewEncoder(&buf).Encode(&update)
@@ -214,6 +243,8 @@ func (db *dummy_db) getTableScan() (*dynamodb.ScanOutput, error) {
 }
 
 func (db *dummy_db) makeDynamoDbRow(n string, s string, b bool) map[string]*dynamodb.AttributeValue {
+	// Use the same number, string, and bool for all values to make testing easier
+
 	// Make the row
 	row := make(map[string]*dynamodb.AttributeValue)
 
@@ -238,6 +269,12 @@ func (db *dummy_db) makeDynamoDbRow(n string, s string, b bool) map[string]*dyna
 	regionIds := dynamodb.AttributeValue{}
 	regionIds.L = []*dynamodb.AttributeValue{&eventId, &eventId, &eventId}
 	row["regionIds"] = &regionIds
+
+	// Set the positions map
+	row["position"] = &dynamodb.AttributeValue{}
+	row["position"].M = make(map[string]*dynamodb.AttributeValue)
+	(row["position"].M)["lat"] = &eventId
+	(row["position"].M)["lng"] = &eventId
 
 	return row
 }
