@@ -169,8 +169,15 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 
 		// Extract the uuid and dealtWith with boolean
 		uuid := *(*row["uuid"]).S
-		description := *(*row["description"]).S
 		dealtWith := *(*row["dealtWith"]).BOOL
+
+		// Extract the description if present
+		var description string
+		if (*row["description"]).S != nil {
+			description = *(*row["description"]).S
+		} else {
+			description = ""
+		}
 
 		// Parse the regionIds
 		unparsedRegions := (*(row["regionIds"])).L

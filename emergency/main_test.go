@@ -63,6 +63,32 @@ func TestValidLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
+		UUID:        "Test-UUID",
+		EventId:     99,
+		RegionIds:   []int{99, 99, 99},
+		DealtWith:   false,
+		OccurredAt:  int(time.Now().Unix()),
+		Description: "Help me",
+	}
+
+	err := json.NewEncoder(&buf).Encode(&update)
+	if err != nil {
+		t.Error("Unable to encode update struct to json")
+	}
+
+	req, _ := http.NewRequest("POST", "/emergency-update", &buf)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+	if body := response.Body.String(); body != "" {
+		t.Errorf("Expected an empty body. Got %s", body)
+	}
+}
+
+func TestValidLocationUpdateWithoutDescription(t *testing.T) {
+	var buf bytes.Buffer
+
+	update := emergency_request{
 		UUID:       "Test-UUID",
 		EventId:    99,
 		RegionIds:  []int{99, 99, 99},
