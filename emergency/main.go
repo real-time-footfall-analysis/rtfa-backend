@@ -26,6 +26,10 @@ type emergency_request struct {
 	OccurredAt  int    `json:"occurredAt"`
 	DealtWith   bool   `json:"dealtWith"`
 	Description string `json:"description"`
+	Position    *struct {
+		Lat float64 `json:"lat"`
+		Lng float64 `json:"lng"`
+	} `json:"position"`
 }
 
 var db emergencyDbAdapter = &dynamoDbAdaptor{}
@@ -193,7 +197,28 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 			OccurredAt:  occurredAt,
 			RegionIds:   regions,
 			DealtWith:   dealtWith,
-			Description: description}
+			Description: description,
+		}
+
+		// Parse the GPS Position
+		if (*row["position"]).M != nil {
+			positionMap := (*row["position"]).M
+			lat, err := strconv.ParseFloat(*positionMap["lat"].N, 32)
+			if err != nil {
+				continue
+			}
+
+			lng, err := strconv.ParseFloat(*positionMap["lng"].N, 32)
+			if err != nil {
+				continue
+			}
+
+			// Add it to the struct
+			parsedRow.Position = &struct {
+				Lat float64 `json:"lat"`
+				Lng float64 `json:"lng"`
+			}{Lat: lat, Lng: lng}
+		}
 
 		// Add to final list
 		parsed = append(parsed, parsedRow)
