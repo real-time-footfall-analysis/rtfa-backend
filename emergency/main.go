@@ -3,12 +3,13 @@ package emergency
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/gorilla/mux"
-	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
 // Init registers the endpoints exposed by this package
@@ -41,6 +42,9 @@ func Init(r *mux.Router) {
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
+
+	utils.SetAccessControlHeaders(writer)
+
 	decoder := json.NewDecoder(request.Body)
 
 	var emergencyUpdate emergency_request
