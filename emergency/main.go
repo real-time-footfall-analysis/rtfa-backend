@@ -90,11 +90,14 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Send the item
+	// Send the item to the database
 	err = db.sendItem(emergencyUpdate)
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	// Return the update to the user
+	json.NewEncoder(writer).Encode(emergencyUpdate)
 }
 
 func requestHandler(writer http.ResponseWriter, request *http.Request) {

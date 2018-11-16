@@ -29,7 +29,8 @@ func TestGETLocationWithValues(t *testing.T) {
 
 	checkResponseCode(t, http.StatusOK, response.Code)
 	expected := "[{\"uuid\":\"test\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":99,\"dealtWith\":false,\"description\":\"test\",\"position\":{\"lat\":99,\"lng\":99}}]"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
+	body := response.Body.String()
+	if strings.TrimSpace(body) != expected {
 		t.Errorf("Expected %s. Got %s", expected, body)
 	}
 }
@@ -67,7 +68,7 @@ func TestValidLocationUpdate(t *testing.T) {
 		EventId:     99,
 		RegionIds:   []int{99, 99, 99},
 		DealtWith:   false,
-		OccurredAt:  int(time.Now().Unix()),
+		OccurredAt:  123456,
 		Description: "Help me",
 	}
 
@@ -80,8 +81,10 @@ func TestValidLocationUpdate(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	if body := response.Body.String(); body != "" {
-		t.Errorf("Expected an empty body. Got %s", body)
+	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"Help me\",\"position\":null}\n"
+	body := response.Body.String()
+	if body != expected {
+		t.Errorf("Expected %s. Got %s", expected, body)
 	}
 }
 
@@ -93,7 +96,7 @@ func TestValidLocationUpdateWithoutPosition(t *testing.T) {
 		EventId:    99,
 		RegionIds:  []int{99, 99, 99},
 		DealtWith:  false,
-		OccurredAt: int(time.Now().Unix()),
+		OccurredAt: 123456,
 	}
 
 	err := json.NewEncoder(&buf).Encode(&update)
@@ -105,8 +108,10 @@ func TestValidLocationUpdateWithoutPosition(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	if body := response.Body.String(); body != "" {
-		t.Errorf("Expected an empty body. Got %s", body)
+	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":null}\n"
+	body := response.Body.String()
+	if strings.Compare(expected, body) != 0 {
+		t.Errorf("\n%s\n%s", expected, body)
 	}
 }
 
@@ -118,7 +123,7 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 		EventId:    99,
 		RegionIds:  []int{99, 99, 99},
 		DealtWith:  false,
-		OccurredAt: int(time.Now().Unix()),
+		OccurredAt: 123456,
 		Position: &struct {
 			Lat float64 `json:"lat"`
 			Lng float64 `json:"lng"`
@@ -134,8 +139,9 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	if body := response.Body.String(); body != "" {
-		t.Errorf("Expected an empty body. Got %s", body)
+	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":{\"lat\":1.1,\"lng\":1.1}}\n"
+	if body := response.Body.String(); body != expected {
+		t.Errorf("Expected %s. Got %s", expected, body)
 	}
 }
 
