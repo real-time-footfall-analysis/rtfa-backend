@@ -185,7 +185,7 @@ func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
 
 		// Parse the regionIds
 		unparsedRegions := (*(row["regionIds"])).L
-		var regions []int
+		var regions = []int{}
 		for _, reg := range unparsedRegions {
 			regionId, _ := strconv.Atoi(*reg.N)
 			regions = append(regions, regionId)
