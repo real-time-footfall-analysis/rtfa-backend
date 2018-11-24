@@ -44,6 +44,9 @@ func Init(r *mux.Router) {
 }
 
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
+
+	utils.SetAccessControlHeaders(writer)
+
 	decoder := json.NewDecoder(request.Body)
 
 	var emergencyUpdate emergency_request
