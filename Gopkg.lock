@@ -37,9 +37,15 @@
   revision = "0b12d6b5"
 
 [[projects]]
+  name = "github.com/pusher/pusher-http-go"
+  packages = ["."]
+  revision = "412688bb3aba082ba848395e80f3acf7e735af7d"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["pbkdf2"]
+  packages = ["internal/subtle","nacl/secretbox","pbkdf2","poly1305","salsa20/salsa"]
   revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
 
 [[projects]]
@@ -51,6 +57,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a29abceea748378aa5d3637da36ab25b1ee01ae6a60a73c203b35daabfc378ac"
+  inputs-digest = "b7326731ef9e90a3a170c5ed4b38f81eb29a851d00f9e448f64345a0c907a8ac"
   solver-name = "gps-cdcl"
   solver-version = 1
