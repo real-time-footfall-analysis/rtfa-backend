@@ -3,13 +3,13 @@ package emergency
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/pusher"
+	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/gorilla/mux"
-	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
 // Init registers the endpoints exposed by this package
@@ -34,9 +34,11 @@ type emergency_request struct {
 }
 
 var db emergencyDbAdapter = &dynamoDbAdaptor{}
+var pc pusher.PusherInterface = &pusher.PusherClient{}
 
 func Init(r *mux.Router) {
 	db.initConn()
+	pc.InitConn()
 	r.HandleFunc("/emergency-update", updateHandler).Methods("POST")
 	r.HandleFunc("/live/emergency/{eventId}/{lastPoll}", requestHandler).Methods("GET")
 }
@@ -95,13 +97,15 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Send the item to the database
-	err = db.sendItem(emergencyUpdate)
-	if err != nil {
-		log.Println(err.Error())
-	}
+	db.sendItem(emergencyUpdate)
+
+	// Push the item to Pusher
+	channelName := strconv.Itoa(emergencyUpdate.EventId)
+	data, _ := json.Marshal(emergencyUpdate)
+	pc.SendItem(channelName, "emergency-update", data)
 
 	// Return the update to the user
-	json.NewEncoder(writer).Encode(emergencyUpdate)
+	_ = json.NewEncoder(writer).Encode(emergencyUpdate)
 }
 
 func requestHandler(writer http.ResponseWriter, request *http.Request) {

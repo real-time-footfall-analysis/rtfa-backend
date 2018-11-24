@@ -22,6 +22,7 @@ func init() {
 func TestGETLocationWithValues(t *testing.T) {
 	// Create a dummy db
 	db = &dummy_db{t}
+	pc = &dummy_pusher{t}
 
 	// Event has one entry
 	req, _ := http.NewRequest("GET", "/live/emergency/99/0", nil)
@@ -38,6 +39,7 @@ func TestGETLocationWithValues(t *testing.T) {
 func TestGETNoResults(t *testing.T) {
 	// Create a dummy db with no entries
 	db = &dummy_db{t}
+	pc = &dummy_pusher{t}
 
 	// Event has no entry
 	req, _ := http.NewRequest("GET", "/live/emergency/1/0", nil)
@@ -285,6 +287,22 @@ func (db *dummy_db) makeDynamoDbRow(n string, s string, b bool) map[string]*dyna
 	return row
 }
 
-func (db *dummy_db) sendItem(req emergency_request) (err error) {
-	return nil
+func (db *dummy_db) sendItem(req emergency_request) {
+	return
+}
+
+/***************************
+   FAKE Pusher queue
+***************************/
+
+type dummy_pusher struct {
+	t *testing.T
+}
+
+func (pc *dummy_pusher) InitConn() {
+	return
+}
+
+func (pc *dummy_pusher) SendItem(channelName string, eventName string, data []byte) {
+	return
 }

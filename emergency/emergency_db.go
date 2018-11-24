@@ -17,7 +17,7 @@ const (
 type emergencyDbAdapter interface {
 	initConn() error
 	getTableScan() (*dynamodb.ScanOutput, error)
-	sendItem(req emergency_request) error
+	sendItem(req emergency_request)
 }
 
 type dynamoDbAdaptor struct {
@@ -55,7 +55,7 @@ func (db *dynamoDbAdaptor) getTableScan() (*dynamodb.ScanOutput, error) {
 }
 
 // Pre: the event object is valid
-func (db *dynamoDbAdaptor) sendItem(req emergency_request) (err error) {
+func (db *dynamoDbAdaptor) sendItem(req emergency_request) {
 	// Encode the data
 	encoded, err := dynamodbattribute.MarshalMap(req)
 	if err != nil {
@@ -73,10 +73,7 @@ func (db *dynamoDbAdaptor) sendItem(req emergency_request) (err error) {
 	// Send the item
 	_, err = db.db.PutItem(input)
 	if err != nil {
-		fmt.Println("Got error calling PutItem:")
-		fmt.Println(err.Error())
-		return
+		log.Println("Got an error putting item in DynamoDB")
+		log.Println(err.Error())
 	}
-
-	return nil
 }
