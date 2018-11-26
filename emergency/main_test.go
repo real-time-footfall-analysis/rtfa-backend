@@ -274,6 +274,10 @@ func (db *dummy_db) SendItem(req interface{}) {
 	return
 }
 
+func (db *dummy_db) GetItem(pKeyColName string, pKeyValue string) map[string]interface{} {
+	return nil
+}
+
 /***************************
    FAKE Pusher queue
 ***************************/

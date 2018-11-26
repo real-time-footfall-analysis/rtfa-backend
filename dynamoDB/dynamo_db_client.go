@@ -13,6 +13,7 @@ type DynamoDBInterface interface {
 	InitConn(tableName string) error
 	GetTableScan() []map[string]interface{}
 	SendItem(req interface{})
+	GetItem(pKeyColName string, pKeyValue string) map[string]interface{}
 }
 
 type DynamoDBClient struct {
@@ -90,4 +91,36 @@ func (db *DynamoDBClient) SendItem(req interface{}) {
 		log.Println("Got an error putting item in DynamoDB")
 		log.Println(err.Error())
 	}
+}
+
+func (db *DynamoDBClient) GetItem(pKeyColName string, pKeyValue string) map[string]interface{} {
+	// Try and get the item
+	result, err := db.connection.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(db.tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			*aws.String(pKeyColName): {
+				S: aws.String(pKeyValue),
+			},
+		},
+	})
+
+	// Check if there was an error getting the item
+	if err != nil {
+		log.Println("Error retrieving item from database")
+		log.Println(err)
+		return nil
+	}
+
+	// Create a row
+	m := make(map[string]interface{})
+
+	// Unmarshall the raw row
+	err = dynamodbattribute.UnmarshalMap(result.Item, &m)
+	if err != nil {
+		log.Println("Error unmarshalling the retrieved item")
+		log.Println(err)
+		return nil
+	}
+
+	return m
 }

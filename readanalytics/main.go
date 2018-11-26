@@ -3,6 +3,7 @@ package readanalytics
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/real-time-footfall-analysis/rtfa-backend/dynamoDB"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,16 +12,18 @@ import (
 	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 )
 
+var analytics_database dynamoDB.DynamoDBInterface = &dynamoDB.DynamoDBClient{}
+
 func Init(r *mux.Router) {
-
+	_ = analytics_database.InitConn("analytics_results")
 	r.HandleFunc("/events/{eventId}/tasks/{taskId}", getTaskResultHandler).Methods("GET")
-
 }
 
 func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
-
+	// Allow cross origin
 	utils.SetAccessControlHeaders(w)
 
+	// Get the task identifiers
 	vars := mux.Vars(r)
 	eventIDStr := vars["eventId"]
 	taskIDStr := vars["taskId"]
@@ -61,16 +64,16 @@ func getTaskResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := fetchAnalyticsResult(eventID, taskID)
-	if err != nil {
-		log.Println(err)
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to get region by event ID: %s", err),
-			http.StatusInternalServerError)
-		return
-	}
+	// Get the result
+	pKeyColName := "EventID-TaskID"
+	pKeyValue := fmt.Sprintf("%d-%d", eventID, taskID)
+	result := analytics_database.GetItem(pKeyColName, pKeyValue)
 
-	json.NewEncoder(w).Encode(result)
+	// Rename the results to a more usable format
+	delete(result, pKeyColName)
+	result["eventID"] = eventID
+	result["taskID"] = taskID
 
+	// Send the result back
+	_ = json.NewEncoder(w).Encode(result)
 }
