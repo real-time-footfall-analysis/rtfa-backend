@@ -11,7 +11,7 @@ import (
 
 type DynamoDBInterface interface {
 	InitConn(tableName string) error
-	GetTableScan() []interface{}
+	GetTableScan() []map[string]interface{}
 	SendItem(req interface{})
 }
 
@@ -41,7 +41,7 @@ func (db *DynamoDBClient) InitConn(tableName string) error {
 }
 
 // Get a scan of the entire table
-func (db *DynamoDBClient) GetTableScan() []interface{} {
+func (db *DynamoDBClient) GetTableScan() []map[string]interface{} {
 	// Take a scan of the table
 	params := &dynamodb.ScanInput{
 		TableName: aws.String(db.tableName),
@@ -55,7 +55,7 @@ func (db *DynamoDBClient) GetTableScan() []interface{} {
 	}
 
 	// Create list to store result in
-	var allRows = make([]interface{}, len(result.Items))
+	var allRows = make([]map[string]interface{}, len(result.Items))
 
 	// Unmarshall to list of maps
 	for index, row := range result.Items {

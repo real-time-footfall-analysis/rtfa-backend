@@ -236,15 +236,15 @@ func (dq *dummy_db) InitConn(tableName string) error {
 	return nil
 }
 
-func (db *dummy_db) GetTableScan() []interface{} {
+func (db *dummy_db) GetTableScan() []map[string]interface{} {
 	// Make a fake table and insert a row
-	tableScan := make([]interface{}, 1)
+	tableScan := make([]map[string]interface{}, 1)
 	tableScan[0] = db.makeRow(99, "test", false)
 
 	return tableScan
 }
 
-func (db *dummy_db) makeRow(n int, s string, b bool) interface{} {
+func (db *dummy_db) makeRow(n int, s string, b bool) map[string]interface{} {
 	// Use the same number, string, and bool for all values to make testing easier
 
 	// Make the row

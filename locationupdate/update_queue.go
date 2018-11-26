@@ -11,7 +11,7 @@ import (
 
 type queue_adapter interface {
 	initConn() error
-	addLocationUpdate(event *update) error
+	addLocationUpdate(event *Movement_update) error
 }
 
 type kenisis_queue struct {
@@ -39,7 +39,7 @@ func (kq *kenisis_queue) initConn() error {
 }
 
 // Pre: the event object is valid
-func (kq *kenisis_queue) addLocationUpdate(event *update) error {
+func (kq *kenisis_queue) addLocationUpdate(event *Movement_update) error {
 	// Encode a record into JSON bytes
 	byteEncodedMov, _ := json.Marshal(event)
 
