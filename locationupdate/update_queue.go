@@ -5,6 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
+	"log"
+	"os"
 )
 
 type queue_adapter interface {
@@ -23,7 +25,11 @@ func (kq *kenisis_queue) initConn() error {
 	stream := "movement_event_stream"
 	region := "eu-central-1"
 	// Create a new AWS session in the reqired region
-	s := session.New(&aws.Config{Region: aws.String(region)})
+	s, err := session.NewSession(&aws.Config{Region: aws.String(region)})
+	if err != nil {
+		log.Println(err.Error())
+		os.Exit(1)
+	}
 
 	// Create a new kinesis adapter (assume stream exists
 	kq.kinesis = kinesis.New(s)
