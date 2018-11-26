@@ -18,6 +18,8 @@ RUN dep ensure
 
 RUN go test -v ./...
 
+RUN rm **/*_test.go
+
 RUN go build -o ~/go/bin/main .
 
 ENTRYPOINT ~/go/bin/main
