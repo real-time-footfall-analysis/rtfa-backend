@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"time"
 )
 
 // Init registers the endpoints exposed by this package
@@ -103,11 +102,19 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// TODO: replace with actual timestamp from frontend
-	now := int(time.Now().Unix())
-	update.OccurredAt = &now
+	if *update.OccurredAt < 0 {
+		log.Println("Invalid OccurredAt in movement update")
+		http.Error(
+			writer,
+			fmt.Sprintf("Invalid occurredAt (timestamp)"),
+			http.StatusBadRequest)
+		return
+	}
 
-	_ = queue.addLocationUpdate(&update)
-
-	return
+	// Send the data to the kinesis stream
+	err = queue.addLocationUpdate(&update)
+	if err != nil {
+		log.Println("Error sending data to Kinesis")
+		log.Println(err.Error())
+	}
 }
