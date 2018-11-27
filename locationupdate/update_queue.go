@@ -2,11 +2,12 @@ package locationupdate
 
 import (
 	"encoding/json"
+	"log"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
-	"log"
-	"os"
 )
 
 type queue_adapter interface {
