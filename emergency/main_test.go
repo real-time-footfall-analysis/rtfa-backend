@@ -3,7 +3,6 @@ package emergency
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
@@ -233,62 +232,50 @@ type dummy_db struct {
 	t *testing.T
 }
 
-func (dq *dummy_db) initConn() error {
+func (dq *dummy_db) InitConn(tableName string) error {
 	return nil
 }
 
-func (db *dummy_db) makeDummyEntry() {
-
-}
-
-func (db *dummy_db) getTableScan() (*dynamodb.ScanOutput, error) {
+func (db *dummy_db) GetTableScan() []map[string]interface{} {
 	// Make a fake table and insert a row
-	tableScan := new(dynamodb.ScanOutput)
-	row := db.makeDynamoDbRow("99", "test", false)
-	tableScan.Items = append(tableScan.Items, row)
+	tableScan := make([]map[string]interface{}, 1)
+	tableScan[0] = db.makeRow(99, "test", false)
 
-	return tableScan, nil
+	return tableScan
 }
 
-func (db *dummy_db) makeDynamoDbRow(n string, s string, b bool) map[string]*dynamodb.AttributeValue {
+func (db *dummy_db) makeRow(n int, s string, b bool) map[string]interface{} {
 	// Use the same number, string, and bool for all values to make testing easier
 
 	// Make the row
-	row := make(map[string]*dynamodb.AttributeValue)
+	row := make(map[string]interface{})
+	row["eventId"] = n
+	row["occurredAt"] = n
 
-	// Set the uuid & occurred at (numerical values)
-	eventId := dynamodb.AttributeValue{}
-	eventId.N = &n
-	row["eventId"] = &eventId
-	row["occurredAt"] = &eventId
-
-	// Set the uuid
-	uuid := dynamodb.AttributeValue{}
-	uuid.S = &s
-	row["uuid"] = &uuid
-	row["description"] = &uuid
+	row["uuid"] = s
+	row["description"] = s
 
 	// Set the boolean dealt with
-	dealtWith := dynamodb.AttributeValue{}
-	dealtWith.BOOL = &b
-	row["dealtWith"] = &dealtWith
+	row["dealtWith"] = b
 
 	// Set the boolean dealt with
-	regionIds := dynamodb.AttributeValue{}
-	regionIds.L = []*dynamodb.AttributeValue{&eventId, &eventId, &eventId}
-	row["regionIds"] = &regionIds
+	row["regionIds"] = []int{n, n, n}
 
 	// Set the positions map
-	row["position"] = &dynamodb.AttributeValue{}
-	row["position"].M = make(map[string]*dynamodb.AttributeValue)
-	(row["position"].M)["lat"] = &eventId
-	(row["position"].M)["lng"] = &eventId
+	position := make(map[string]int)
+	position["lat"] = n
+	position["lng"] = n
+	row["position"] = position
 
 	return row
 }
 
-func (db *dummy_db) sendItem(req emergency_request) {
+func (db *dummy_db) SendItem(req interface{}) {
 	return
+}
+
+func (db *dummy_db) GetItem(pKeyColName string, pKeyValue string) map[string]interface{} {
+	return nil
 }
 
 /***************************

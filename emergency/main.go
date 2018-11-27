@@ -3,12 +3,14 @@ package emergency
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
+	"github.com/real-time-footfall-analysis/rtfa-backend/dynamoDB"
 	"github.com/real-time-footfall-analysis/rtfa-backend/pusher"
 	"github.com/real-time-footfall-analysis/rtfa-backend/utils"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -33,11 +35,15 @@ type emergency_request struct {
 	} `json:"position"`
 }
 
-var db emergencyDbAdapter = &dynamoDbAdaptor{}
+var db dynamoDB.DynamoDBInterface = &dynamoDB.DynamoDBClient{}
 var pc pusher.PusherInterface = &pusher.PusherClient{}
 
 func Init(r *mux.Router) {
-	db.initConn()
+	err := db.InitConn("emergency_events")
+	if err != nil {
+		os.Exit(1)
+	}
+
 	pc.InitConn()
 	r.HandleFunc("/emergency-update", updateHandler).Methods("POST")
 	r.HandleFunc("/live/emergency/{eventId}/{lastPoll}", requestHandler).Methods("GET")
@@ -97,7 +103,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Send the item to the database
-	db.sendItem(emergencyUpdate)
+	db.SendItem(emergencyUpdate)
 
 	// Push the item to Pusher
 	channelName := strconv.Itoa(emergencyUpdate.EventId)
@@ -139,17 +145,17 @@ func requestHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Scan the table, parse the result and filter out old events
-	scan, err := db.getTableScan()
-	if err != nil {
-		log.Println("Error getting the scan of the emergencies DynamoDB table")
+	unparsedRows := db.GetTableScan()
+	var parsedRows []emergency_request = make([]emergency_request, len(unparsedRows))
+	for index, row := range unparsedRows {
+		_ = mapstructure.Decode(row, &parsedRows[index])
 	}
 
-	// Parse the scan and remove old values
-	parsed := parseScan(scan)
-	recents := extractRecentUpdates(parsed, eventId, lastPoll)
+	// Extract relevant values
+	recents := extractRecentUpdates(parsedRows, eventId, lastPoll)
 
 	// Transmit the result back
-	json.NewEncoder(writer).Encode(recents)
+	_ = json.NewEncoder(writer).Encode(recents)
 }
 
 func extractRecentUpdates(parsed []emergency_request, event int, prevPoll int) (res []emergency_request) {
@@ -162,79 +168,6 @@ func extractRecentUpdates(parsed []emergency_request, event int, prevPoll int) (
 			deleted++
 		}
 	}
-	return parsed
-}
-
-func parseScan(tableScan *dynamodb.ScanOutput) []emergency_request {
-	var parsed []emergency_request
-
-	// Parse the table scanned items
-	for _, row := range tableScan.Items {
-		// Parse the eventId
-		eventId, err := strconv.Atoi(*(*row["eventId"]).N)
-		if err != nil {
-			continue
-		}
-
-		// Parse the timestamp
-		occurredAt, err := strconv.Atoi(*(*row["occurredAt"]).N)
-		if err != nil {
-			continue
-		}
-
-		// Extract the uuid and dealtWith with boolean
-		uuid := *(*row["uuid"]).S
-		dealtWith := *(*row["dealtWith"]).BOOL
-
-		// Extract the description if present
-		var description string
-		if (*row["description"]).S != nil {
-			description = *(*row["description"]).S
-		} else {
-			description = ""
-		}
-
-		// Parse the regionIds
-		unparsedRegions := (*(row["regionIds"])).L
-		var regions = []int{}
-		for _, reg := range unparsedRegions {
-			regionId, _ := strconv.Atoi(*reg.N)
-			regions = append(regions, regionId)
-		}
-
-		// Insert into a new emergency request
-		parsedRow := emergency_request{EventId: eventId,
-			UUID:        uuid,
-			OccurredAt:  occurredAt,
-			RegionIds:   regions,
-			DealtWith:   dealtWith,
-			Description: description,
-		}
-
-		// Parse the GPS Position
-		if (*row["position"]).M != nil {
-			positionMap := (*row["position"]).M
-			lat, err := strconv.ParseFloat(*positionMap["lat"].N, 32)
-			if err != nil {
-				continue
-			}
-
-			lng, err := strconv.ParseFloat(*positionMap["lng"].N, 32)
-			if err != nil {
-				continue
-			}
-
-			// Add it to the struct
-			parsedRow.Position = &struct {
-				Lat float64 `json:"lat"`
-				Lng float64 `json:"lng"`
-			}{Lat: lat, Lng: lng}
-		}
-
-		// Add to final list
-		parsed = append(parsed, parsedRow)
-	}
-
 	return parsed
 }
 

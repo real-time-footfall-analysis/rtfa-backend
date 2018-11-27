@@ -16,7 +16,7 @@ var queue queue_adapter = &kenisis_queue{}
 
 func Init(r *mux.Router) {
 
-	queue.initConn()
+	_ = queue.initConn()
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
 }
@@ -25,7 +25,7 @@ const (
 	UUID_MIN_LENGTH = 5
 )
 
-type update struct {
+type Movement_update struct {
 	UUID       *string `json:"uuid"`
 	EventID    *int    `json:"eventId"`
 	RegionID   *int    `json:"regionId"`
@@ -34,14 +34,14 @@ type update struct {
 }
 
 func notPresentError(writer http.ResponseWriter, name string) {
-	log.Println(name + " not present in update")
+	log.Println(name + " not present in movement update")
 	http.Error(
 		writer,
-		fmt.Sprintf(name+" not present in update"),
+		fmt.Sprintf(name+" not present in movement update"),
 		http.StatusBadRequest)
 }
 
-func notPresentCheck(writer http.ResponseWriter, update update) bool {
+func notPresentCheck(writer http.ResponseWriter, update Movement_update) bool {
 	if update.UUID == nil {
 		notPresentError(writer, "UUID")
 		return true
@@ -68,15 +68,15 @@ func notPresentCheck(writer http.ResponseWriter, update update) bool {
 func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	decoder := json.NewDecoder(request.Body)
 
-	var update update
+	var update Movement_update
 
 	err := decoder.Decode(&update)
 
 	if err != nil {
-		log.Println("Cannot decode update:", err)
+		log.Println("Cannot decode movement update:", err)
 		http.Error(
 			writer,
-			fmt.Sprintf("Failed to decode update: %s", err),
+			fmt.Sprintf("Failed to decode movement update: %s", err),
 			http.StatusBadRequest)
 		return
 	}
@@ -86,7 +86,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	if len(*update.UUID) < UUID_MIN_LENGTH {
-		log.Println("UUID less than 5 characters in update")
+		log.Println("UUID less than 5 characters in movement update")
 		http.Error(
 			writer,
 			fmt.Sprintf("UUID less than 5 characters"),
@@ -95,7 +95,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	if *update.EventID < 0 {
-		log.Println("Invalid EventId in update")
+		log.Println("Invalid EventId in movement update")
 		http.Error(
 			writer,
 			fmt.Sprintf("Invalid EventId"),
@@ -107,7 +107,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	now := int(time.Now().Unix())
 	update.OccurredAt = &now
 
-	queue.addLocationUpdate(&update)
+	_ = queue.addLocationUpdate(&update)
 
 	return
 }

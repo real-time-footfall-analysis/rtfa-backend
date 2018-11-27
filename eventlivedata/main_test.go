@@ -20,14 +20,15 @@ func TestGETLocationUpdate(t *testing.T) {
 
 	retMap := make(map[string]int, 0)
 	retMap["one"] = 1
-	db = &dummy_db{retMap, 1, t}
+	db = &dummy_db{t}
 
 	req, _ := http.NewRequest("GET", "/live/heatmap/1", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	if body := response.Body.String(); strings.TrimSpace(body) != "{\"one\":1}" {
-		t.Errorf("Expected an empty body. Got %s", body)
+	expected := "{\"1\":1}"
+	if body := response.Body.String(); strings.TrimSpace(body) != expected {
+		t.Errorf("Expected %s. Got %s", expected, body)
 	}
 }
 
@@ -45,18 +46,26 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 }
 
 type dummy_db struct {
-	ret map[string]int
-	id  int
-	t   *testing.T
+	t *testing.T
 }
 
-func (dq *dummy_db) initConn() error {
+func (dq *dummy_db) InitConn(tableName string) error {
 	return nil
 }
 
-func (db *dummy_db) getLiveHeatMap(event int) (map[string]int, error) {
-	if db.id != event {
-		db.t.Errorf("wrong event id")
-	}
-	return db.ret, nil
+func (db *dummy_db) GetTableScan() []map[string]interface{} {
+	row := make(map[string]interface{})
+	row["eventId"] = 1
+	row["regionId"] = 1
+	rows := make([]map[string]interface{}, 1)
+	rows[0] = row
+	return rows
+}
+
+func (db *dummy_db) SendItem(req interface{}) {
+	return
+}
+
+func (db *dummy_db) GetItem(pKeyColName string, pKeyValue string) map[string]interface{} {
+	return nil
 }
