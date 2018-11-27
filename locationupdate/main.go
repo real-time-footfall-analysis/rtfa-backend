@@ -106,7 +106,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Invalid OccurredAt in movement update")
 		http.Error(
 			writer,
-			fmt.Sprintf("Invalid EventId"),
+			fmt.Sprintf("Invalid occurredAt (timestamp)"),
 			http.StatusBadRequest)
 		return
 	}
