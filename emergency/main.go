@@ -36,7 +36,7 @@ type emergency_request struct {
 }
 
 var db dynamoDB.DynamoDBInterface = &dynamoDB.DynamoDBClient{}
-var pc pusher.PusherInterface = &pusher.PusherClient{}
+var pc pusher.PusherChannelInterface = &pusher.PusherChannelClient{}
 
 func Init(r *mux.Router) {
 	err := db.InitConn("emergency_events")
