@@ -69,13 +69,13 @@ func TestUUIDLengthLocationUpdate(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
-	expected := "UUID less than " + strconv.Itoa(UUID_MIN_LENGTH) + " characters"
+	expected := "UUID not " + strconv.Itoa(UUID_LENGTH) + " characters"
 	if body := response.Body.String(); !strings.Contains(body, expected) {
 		t.Errorf("Expected error: %s", expected)
 	}
 
 	if !strings.Contains(logBuf.String(), expected) {
-		t.Error("Expected Log output for UUID less than " + strconv.Itoa(UUID_MIN_LENGTH) + " characters")
+		t.Error("Expected Log output for UUID less than " + strconv.Itoa(UUID_LENGTH) + " characters")
 	}
 }
 
@@ -202,7 +202,7 @@ func TestIncompleteLocationUpdate5(t *testing.T) {
 func TestLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 
-	uuid := "Test-UUID"
+	uuid := "Test-UUID-00000000000000000000000000"
 	eventId := 0
 	regionID := 1
 	entering := true

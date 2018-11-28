@@ -24,7 +24,7 @@ func Init(r *mux.Router) {
 }
 
 const (
-	UUID_MIN_LENGTH = 5
+	UUID_LENGTH = 36
 )
 
 type Movement_update struct {
@@ -137,8 +137,8 @@ func validateUpdate(update *Movement_update, writer http.ResponseWriter) error {
 		return errors.New("Movement update missing fields")
 	}
 
-	if len(*update.UUID) < UUID_MIN_LENGTH {
-		msg := fmt.Sprintf("UUID less than 5 characters in movement update %+v", update)
+	if len(*update.UUID) != UUID_LENGTH {
+		msg := fmt.Sprintf("UUID not 36 characters in movement update %+v", update)
 		log.Println(msg)
 		http.Error(
 			writer,

@@ -19,7 +19,7 @@ import (
 // Also initialises the static data database connection
 
 const (
-	UUID_MIN_LENGTH = 5
+	UUID_LENGTH = 36
 )
 
 type emergency_request struct {
@@ -69,11 +69,11 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Check the other fields in the data
-	if emergencyUpdate.UUID == "" || len(emergencyUpdate.UUID) < UUID_MIN_LENGTH {
-		log.Println("uuid field is empty:", err)
+	if len(emergencyUpdate.UUID) != UUID_LENGTH {
+		log.Println("uuid field is not 36 characters:", err)
 		http.Error(
 			writer,
-			fmt.Sprintf("uuid field is empty %s", err),
+			fmt.Sprintf("uuid field is not 36 characters %s", err),
 			http.StatusBadRequest)
 		return
 	}
