@@ -54,9 +54,14 @@ type PusherBeamsClient struct {
 func (pbc *PusherBeamsClient) InitConn() {
 	const instanceId = "5cb5ee8c-bcd9-4b07-ab76-95220dc679c1"
 
+	// Don't connect in test mode
+	if flag.Lookup("test.v") != nil {
+		return
+	}
+
 	// Get the secret key
 	secretKey := os.Getenv("RTFA_PUSHER_BEAMS_SECRET_KEY")
-	if secretKey == "" && flag.Lookup("test.v") == nil {
+	if secretKey == "" {
 		log.Fatal("RTFA_PUSHER_BEAMS_SECRET_KEY not set.")
 	}
 
