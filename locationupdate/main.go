@@ -4,20 +4,29 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/real-time-footfall-analysis/rtfa-backend/kinesisqueue"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
+const kinesisStreamName = "movement_event_stream"
+
 // Init registers the endpoints exposed by this package
 // with the given Router.
 // Also initialises the static data database connection
-var queue queue_adapter = &kenisis_queue{}
+var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KenisisQueueClient{}
 
 func Init(r *mux.Router) {
 
-	_ = queue.initConn()
+	err := queue.InitConn(kinesisStreamName)
+	if err != nil {
+		log.Println("Failed to connect to Kinesis: " + kinesisStreamName)
+		os.Exit(1)
+	}
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
 	r.HandleFunc("/bulkUpdate", bulkKensisUpdateHandler).Methods("POST")
@@ -89,7 +98,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Send the data to the kinesis stream
-	err = queue.addLocationUpdate(&update)
+	err = queue.SendToQueue(update, strconv.Itoa(*update.RegionID))
 	if err != nil {
 		log.Println("Error sending data to Kinesis")
 		log.Println(err.Error())
@@ -121,7 +130,7 @@ func bulkKensisUpdateHandler(writer http.ResponseWriter, request *http.Request) 
 			return
 		}
 
-		err = queue.addLocationUpdate(&update)
+		err = queue.SendToQueue(update, strconv.Itoa(*update.RegionID))
 		if err != nil {
 			log.Printf("Error posting movement update to Kenisis: %+v", update)
 			log.Println(err.Error())

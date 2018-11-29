@@ -249,13 +249,20 @@ type dummy_queue struct {
 	t      *testing.T
 }
 
-// initConn opens the connection to the location event kinesis queue
-func (dq *dummy_queue) initConn() error {
+// InitConn opens the connection to the location event kinesis queue
+func (dq *dummy_queue) InitConn(streamName string) error {
 	return nil
 }
 
 // Pre: the event object is valid
-func (dq *dummy_queue) addLocationUpdate(event *Movement_update) error {
+func (dq *dummy_queue) SendToQueue(data interface{}, shardId string) error {
+
+	// Cast to movement event so we can do additional checks
+	event, ok := data.(Movement_update)
+	if !ok {
+		dq.t.Error("Did not send Movement update to queue")
+	}
+
 	match := true
 	if *event.UUID != *dq.update.UUID {
 		match = false

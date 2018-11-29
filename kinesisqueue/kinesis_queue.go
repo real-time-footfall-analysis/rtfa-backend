@@ -1,4 +1,4 @@
-package locationupdate
+package kinesisqueue
 
 import (
 	"encoding/json"
@@ -10,20 +10,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/kinesis"
 )
 
-type queue_adapter interface {
-	initConn() error
-	addLocationUpdate(event *Movement_update) error
+type KinesisQueueInterface interface {
+	InitConn(streamName string) error
+	SendToQueue(data interface{}, shardId string) error
 }
 
-type kenisis_queue struct {
+type KenisisQueueClient struct {
 	kinesis    *kinesis.Kinesis
 	streamName string
 }
 
-// initConn opens the connection to the location event kinesis queue
-func (kq *kenisis_queue) initConn() error {
+// InitConn opens the connection to the location event kinesis queue
+func (kq *KenisisQueueClient) InitConn(streamName string) error {
 	// Define the stream name and the AWS region it's in
-	stream := "movement_event_stream"
 	region := "eu-central-1"
 	// Create a new AWS session in the reqired region
 	s, err := session.NewSession(&aws.Config{Region: aws.String(region)})
@@ -34,24 +33,26 @@ func (kq *kenisis_queue) initConn() error {
 
 	// Create a new kinesis adapter (assume stream exists
 	kq.kinesis = kinesis.New(s)
-	kq.streamName = stream
+	kq.streamName = streamName
 
 	return nil
 }
 
 // Pre: the event object is valid
-func (kq *kenisis_queue) addLocationUpdate(event *Movement_update) error {
+func (kq *KenisisQueueClient) SendToQueue(data interface{}, shardId string) error {
 	// Encode a record into JSON bytes
-	byteEncodedMov, _ := json.Marshal(event)
+	byteEncodedData, _ := json.Marshal(data)
 
 	// Send the record to Kinesis
 	_, err := kq.kinesis.PutRecord(&kinesis.PutRecordInput{
-		Data:         byteEncodedMov,
+		Data:         byteEncodedData,
 		StreamName:   aws.String(kq.streamName),
-		PartitionKey: aws.String("key1"),
+		PartitionKey: aws.String(shardId),
 	})
 	if err != nil {
-		panic(err)
+		log.Println("Error sending item to Kinesis")
+		log.Println(err)
+		return err
 	}
 	return nil
 
