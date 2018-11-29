@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -157,10 +158,15 @@ func getAllNotifications(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Extract relevant values
-	recents := extractRecentUpdates(parsedRows, eventId)
+	eventNotifications := extractRecentUpdates(parsedRows, eventId)
+
+	// Sort the values by timestamp descending
+	sort.Slice(eventNotifications, func(i, j int) bool {
+		return eventNotifications[i].OccurredAt > eventNotifications[j].OccurredAt
+	})
 
 	// Transmit the result back
-	_ = json.NewEncoder(writer).Encode(recents)
+	_ = json.NewEncoder(writer).Encode(eventNotifications)
 }
 
 func extractRecentUpdates(parsed []organiser_notification, event int) (res []organiser_notification) {

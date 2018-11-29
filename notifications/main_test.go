@@ -3,6 +3,7 @@ package notifications
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
@@ -27,11 +28,24 @@ func init() {
 
 func TestGETNotificationWithValues(t *testing.T) {
 	// Event has one entry
+	req, _ := http.NewRequest("GET", "/events/55/notifications", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+	expected := "[{\"title\":\"test\",\"description\":\"test\",\"regionIds\":[55,55,55],\"occurredAt\":100,\"notificationId\":55,\"eventId\":55}]"
+	body := response.Body.String()
+	if strings.TrimSpace(body) != expected {
+		t.Errorf("Expected %s. Got %s", expected, body)
+	}
+}
+
+func TestGETNotificationWithValuesSorted(t *testing.T) {
+	// Event has one entry
 	req, _ := http.NewRequest("GET", "/events/99/notifications", nil)
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "[{\"title\":\"test\",\"description\":\"test\",\"regionIds\":[99,99,99],\"occurredAt\":99,\"notificationId\":99,\"eventId\":99}]"
+	expected := "[{\"title\":\"test\",\"description\":\"test\",\"regionIds\":[99,99,99],\"occurredAt\":500,\"notificationId\":99,\"eventId\":99},{\"title\":\"test\",\"description\":\"test\",\"regionIds\":[99,99,99],\"occurredAt\":100,\"notificationId\":99,\"eventId\":99}]"
 	body := response.Body.String()
 	if strings.TrimSpace(body) != expected {
 		t.Errorf("Expected %s. Got %s", expected, body)
@@ -50,7 +64,7 @@ func TestGETNoResults(t *testing.T) {
 	}
 }
 
-func TestValidLocationUpdate(t *testing.T) {
+func TestValidNotificationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := organiser_notification{
@@ -98,7 +112,7 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
-func TestValidLocationUpdateWithoutOccurredAt(t *testing.T) {
+func TestInvalidNotificationWithoutOccurredAt(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := organiser_notification{
@@ -118,7 +132,7 @@ func TestValidLocationUpdateWithoutOccurredAt(t *testing.T) {
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
-func TestValidLocationUpdateWithoutRegions(t *testing.T) {
+func TestInvalidNotificationWithoutRegions(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := organiser_notification{
@@ -138,7 +152,7 @@ func TestValidLocationUpdateWithoutRegions(t *testing.T) {
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
-func TestValidLocationUpdateWithoutTitle(t *testing.T) {
+func TestInvalidNotificationWithoutTitle(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := organiser_notification{
@@ -186,21 +200,23 @@ func (dq *dummy_db) InitConn(tableName string) error {
 
 func (db *dummy_db) GetTableScan() []map[string]interface{} {
 	// Make a fake table and insert a row
-	tableScan := make([]map[string]interface{}, 2)
-	tableScan[0] = db.makeRow(99, "test")
-	tableScan[1] = db.makeRow(55, "test")
+	tableScan := make([]map[string]interface{}, 3)
+	tableScan[0] = db.makeRow(99, 100, "test")
+	tableScan[1] = db.makeRow(99, 500, "test")
+	tableScan[2] = db.makeRow(55, 100, "test")
 
+	fmt.Println(tableScan)
 	return tableScan
 }
 
-func (db *dummy_db) makeRow(n int, s string) map[string]interface{} {
+func (db *dummy_db) makeRow(n int, time int, s string) map[string]interface{} {
 	// Use the same number, string, and bool for all values to make testing easier
 
 	// Make the row
 	row := make(map[string]interface{})
 	row["eventId"] = n
-	row["occurredAt"] = n
 	row["notificationId"] = n
+	row["occurredAt"] = time
 
 	row["title"] = s
 	row["description"] = s
