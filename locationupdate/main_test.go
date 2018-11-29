@@ -69,13 +69,13 @@ func TestUUIDLengthLocationUpdate(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
-	if body := response.Body.String(); strings.TrimSpace(body) != "UUID less than "+strconv.Itoa(UUID_MIN_LENGTH)+" characters" {
-		t.Errorf("Expected \"UUID less than "+strconv.Itoa(UUID_MIN_LENGTH)+" characters\". Got \"%s\"", body)
+	expected := "UUID not " + strconv.Itoa(UUID_LENGTH) + " characters"
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected error: %s", expected)
 	}
 
-	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} UUID less than ` + strconv.Itoa(UUID_MIN_LENGTH) + ` characters in movement update\n$`)
-	if !r.MatchString(logBuf.String()) {
-		t.Error("Expected Log output for UUID less than " + strconv.Itoa(UUID_MIN_LENGTH) + " characters")
+	if !strings.Contains(logBuf.String(), expected) {
+		t.Error("Expected Log output for UUID less than " + strconv.Itoa(UUID_LENGTH) + " characters")
 	}
 }
 
@@ -93,8 +93,8 @@ func TestIncompleteLocationUpdate1(t *testing.T) {
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 	expected := "UUID not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected an error: %s", expected)
 	}
 
 	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
@@ -117,8 +117,8 @@ func TestIncompleteLocationUpdate2(t *testing.T) {
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 	expected := "EventID not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected an error: %s", expected)
 	}
 
 	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
@@ -141,8 +141,8 @@ func TestIncompleteLocationUpdate3(t *testing.T) {
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 	expected := "RegionID not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected an error: %s", expected)
 	}
 
 	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
@@ -165,8 +165,8 @@ func TestIncompleteLocationUpdate4(t *testing.T) {
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 	expected := "Entering not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected an error: %s", expected)
 	}
 
 	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
@@ -189,8 +189,8 @@ func TestIncompleteLocationUpdate5(t *testing.T) {
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 	expected := "OccurredAt not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	if body := response.Body.String(); !strings.Contains(body, expected) {
+		t.Errorf("Expected an error: %s", expected)
 	}
 
 	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
@@ -202,7 +202,7 @@ func TestIncompleteLocationUpdate5(t *testing.T) {
 func TestLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 
-	uuid := "Test-UUID"
+	uuid := "Test-UUID-00000000000000000000000000"
 	eventId := 0
 	regionID := 1
 	entering := true
@@ -277,4 +277,28 @@ func (dq *dummy_queue) addLocationUpdate(event *Movement_update) error {
 		dq.t.Error("incorrect update fired to queue")
 	}
 	return nil
+}
+
+func TestIncompleteLocationBulkUpdate(t *testing.T) {
+	var logBuf bytes.Buffer
+	log.SetOutput(&logBuf)
+	defer log.SetOutput(os.Stderr)
+
+	queue = &dummy_queue{update: Movement_update{}, t: t}
+
+	var buf bytes.Buffer
+	buf.WriteString(`[{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true},{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true}]`)
+	req, _ := http.NewRequest("POST", "/bulkUpdate", &buf)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	expected := "OccurredAt not present in movement update"
+	if body := response.Body.String(); strings.TrimSpace(body) != expected {
+		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
+	}
+
+	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
+	if !r.MatchString(logBuf.String()) {
+		t.Errorf("Expected Log output for %s", expected)
+	}
 }

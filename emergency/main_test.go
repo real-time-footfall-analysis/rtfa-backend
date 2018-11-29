@@ -64,8 +64,12 @@ func TestGETWithUpdateURL(t *testing.T) {
 func TestValidLocationUpdate(t *testing.T) {
 	var buf bytes.Buffer
 
+	// Create a dummy db with no entries
+	db = &dummy_db{t}
+	pc = &dummy_pusher{t}
+
 	update := emergency_request{
-		UUID:        "Test-UUID",
+		UUID:        "Test-UUID-00000000000000000000000000",
 		EventId:     99,
 		RegionIds:   []int{99, 99, 99},
 		DealtWith:   false,
@@ -82,7 +86,7 @@ func TestValidLocationUpdate(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"Help me\",\"position\":null}\n"
+	expected := "{\"uuid\":\"Test-UUID-00000000000000000000000000\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"Help me\",\"position\":null}\n"
 	body := response.Body.String()
 	if body != expected {
 		t.Errorf("Expected %s. Got %s", expected, body)
@@ -93,7 +97,7 @@ func TestValidLocationUpdateWithoutPosition(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:       "Test-UUID",
+		UUID:       "Test-UUID-00000000000000000000000000",
 		EventId:    99,
 		RegionIds:  []int{99, 99, 99},
 		DealtWith:  false,
@@ -109,7 +113,7 @@ func TestValidLocationUpdateWithoutPosition(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":null}\n"
+	expected := "{\"uuid\":\"Test-UUID-00000000000000000000000000\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":null}\n"
 	body := response.Body.String()
 	if strings.Compare(expected, body) != 0 {
 		t.Errorf("\n%s\n%s", expected, body)
@@ -120,7 +124,7 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:       "Test-UUID",
+		UUID:       "Test-UUID-00000000000000000000000000",
 		EventId:    99,
 		RegionIds:  []int{99, 99, 99},
 		DealtWith:  false,
@@ -140,7 +144,7 @@ func TestValidLocationUpdateWithoutDescription(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-	expected := "{\"uuid\":\"Test-UUID\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":{\"lat\":1.1,\"lng\":1.1}}\n"
+	expected := "{\"uuid\":\"Test-UUID-00000000000000000000000000\",\"eventId\":99,\"regionIds\":[99,99,99],\"occurredAt\":123456,\"dealtWith\":false,\"description\":\"\",\"position\":{\"lat\":1.1,\"lng\":1.1}}\n"
 	if body := response.Body.String(); body != expected {
 		t.Errorf("Expected %s. Got %s", expected, body)
 	}
@@ -150,7 +154,7 @@ func TestLocationUpdateMissingTimestamp(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:        "Test-UUID",
+		UUID:        "Test-UUID-00000000000000000000000000",
 		EventId:     99,
 		RegionIds:   []int{99, 99, 99},
 		DealtWith:   false,
@@ -193,7 +197,7 @@ func TestLocationUpdateMissingEventId(t *testing.T) {
 	var buf bytes.Buffer
 
 	update := emergency_request{
-		UUID:        "Test-UUID",
+		UUID:        "Test-UUID-00000000000000000000000000",
 		RegionIds:   []int{99, 99, 99},
 		DealtWith:   false,
 		OccurredAt:  int(time.Now().Unix()),

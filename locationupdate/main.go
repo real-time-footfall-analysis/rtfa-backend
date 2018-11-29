@@ -2,10 +2,12 @@ package locationupdate
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // Init registers the endpoints exposed by this package
@@ -18,10 +20,11 @@ func Init(r *mux.Router) {
 	_ = queue.initConn()
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
+	r.HandleFunc("/bulkUpdate", bulkKensisUpdateHandler).Methods("POST")
 }
 
 const (
-	UUID_MIN_LENGTH = 5
+	UUID_LENGTH = 36
 )
 
 type Movement_update struct {
@@ -80,34 +83,8 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if notPresentCheck(writer, update) {
-		return
-	}
-
-	if len(*update.UUID) < UUID_MIN_LENGTH {
-		log.Println("UUID less than 5 characters in movement update")
-		http.Error(
-			writer,
-			fmt.Sprintf("UUID less than 5 characters"),
-			http.StatusBadRequest)
-		return
-	}
-
-	if *update.EventID < 0 {
-		log.Println("Invalid EventId in movement update")
-		http.Error(
-			writer,
-			fmt.Sprintf("Invalid EventId"),
-			http.StatusBadRequest)
-		return
-	}
-
-	if *update.OccurredAt < 0 {
-		log.Println("Invalid OccurredAt in movement update")
-		http.Error(
-			writer,
-			fmt.Sprintf("Invalid occurredAt (timestamp)"),
-			http.StatusBadRequest)
+	err = validateUpdate(&update, writer)
+	if err != nil {
 		return
 	}
 
@@ -117,4 +94,79 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Error sending data to Kinesis")
 		log.Println(err.Error())
 	}
+}
+
+func bulkKensisUpdateHandler(writer http.ResponseWriter, request *http.Request) {
+
+	decoder := json.NewDecoder(request.Body)
+
+	var updates []Movement_update
+
+	err := decoder.Decode(&updates)
+
+	if err != nil {
+		log.Println("Cannot decode movement updates: ", err)
+		http.Error(
+			writer,
+			fmt.Sprintf("Failed to decode movement updates: %s", err),
+			http.StatusBadRequest)
+		return
+	}
+
+	// Validate and insert into the database
+	for _, update := range updates {
+
+		err := validateUpdate(&update, writer)
+		if err != nil {
+			return
+		}
+
+		err = queue.addLocationUpdate(&update)
+		if err != nil {
+			log.Printf("Error posting movement update to Kenisis: %+v", update)
+			log.Println(err.Error())
+		}
+
+	}
+
+}
+
+func validateUpdate(update *Movement_update, writer http.ResponseWriter) error {
+
+	if notPresentCheck(writer, *update) {
+		return errors.New("Movement update missing fields")
+	}
+
+	if len(*update.UUID) != UUID_LENGTH {
+		msg := fmt.Sprintf("UUID not 36 characters in movement update %+v", update)
+		log.Println(msg)
+		http.Error(
+			writer,
+			msg,
+			http.StatusBadRequest)
+		return errors.New(msg)
+	}
+
+	if *update.EventID < 0 {
+		msg := fmt.Sprintf("Invalid EventId in movement update %+v", update)
+		log.Println(msg)
+		http.Error(
+			writer,
+			msg,
+			http.StatusBadRequest)
+		return errors.New(msg)
+	}
+
+	if *update.OccurredAt < 0 {
+		msg := fmt.Sprintf("Invalid OccurredAt in movement update %+v", update)
+		log.Println(msg)
+		http.Error(
+			writer,
+			msg,
+			http.StatusBadRequest)
+		return errors.New(msg)
+	}
+
+	return nil
+
 }
