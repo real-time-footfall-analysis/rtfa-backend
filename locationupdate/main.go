@@ -4,18 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/real-time-footfall-analysis/rtfa-backend/kinesisqueue"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 // Init registers the endpoints exposed by this package
 // with the given Router.
 // Also initialises the static data database connection
-var queue queue_adapter = &kenisis_queue{}
+var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KenisisQueueClient{}
+
+const kinesisStreamName = "movement_event_stream"
 
 func Init(r *mux.Router) {
 
-	_ = queue.initConn()
+	err := queue.InitConn(kinesisStreamName)
+	if err != nil {
+		log.Println("Error connecting to kinesis stream: " + kinesisStreamName)
+		os.Exit(1)
+	}
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
 }
@@ -112,7 +121,7 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Send the data to the kinesis stream
-	err = queue.addLocationUpdate(&update)
+	err = queue.SendToQueue(update, strconv.Itoa(*update.RegionID))
 	if err != nil {
 		log.Println("Error sending data to Kinesis")
 		log.Println(err.Error())
