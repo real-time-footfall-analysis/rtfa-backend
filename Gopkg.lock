@@ -43,6 +43,18 @@
   version = "v1.1.2"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/pusher/push-notifications-go"
+  packages = ["."]
+  revision = "fe2f9c20b8d9081106e0ff73be41c5e75dc8a3c8"
+  version = "1.0.0"
+
+[[projects]]
   name = "github.com/pusher/pusher-http-go"
   packages = ["."]
   revision = "412688bb3aba082ba848395e80f3acf7e735af7d"
@@ -63,6 +75,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c5908f1786213ed66ea06648ed2b30d1b6aebccc4b0e34d1c6e519638b01c5e5"
+  inputs-digest = "dc3dc09143f986be7168b11775f87e71be477034856a1e2dae5e4c69804b0df1"
   solver-name = "gps-cdcl"
   solver-version = 1
