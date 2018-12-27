@@ -18,7 +18,7 @@ const kinesisStreamName = "movement_event_stream"
 // Init registers the endpoints exposed by this package
 // with the given Router.
 // Also initialises the static data database connection
-var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KenisisQueueClient{}
+var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KinesisQueueClient{}
 
 func Init(r *mux.Router) {
 

@@ -15,16 +15,16 @@ type KinesisQueueInterface interface {
 	SendToQueue(data interface{}, shardId string) error
 }
 
-type KenisisQueueClient struct {
+type KinesisQueueClient struct {
 	kinesis    *kinesis.Kinesis
 	streamName string
 }
 
 // InitConn opens the connection to the location event kinesis queue
-func (kq *KenisisQueueClient) InitConn(streamName string) error {
+func (kq *KinesisQueueClient) InitConn(streamName string) error {
 	// Define the stream name and the AWS region it's in
 	region := "eu-central-1"
-	// Create a new AWS session in the reqired region
+	// Create a new AWS session in the required region
 	s, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 	if err != nil {
 		log.Println(err.Error())
@@ -39,7 +39,7 @@ func (kq *KenisisQueueClient) InitConn(streamName string) error {
 }
 
 // Pre: the event object is valid
-func (kq *KenisisQueueClient) SendToQueue(data interface{}, shardId string) error {
+func (kq *KinesisQueueClient) SendToQueue(data interface{}, shardId string) error {
 	// Encode a record into JSON bytes
 	byteEncodedData, _ := json.Marshal(data)
 

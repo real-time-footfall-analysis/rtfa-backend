@@ -18,7 +18,7 @@ import (
 var db dynamoDB.DynamoDBInterface = &dynamoDB.DynamoDBClient{}
 
 func Init(r *mux.Router) {
-	// Creaye a connection to the database
+	// Create a connection to the database
 	err := db.InitConn("current_position")
 	if err != nil {
 		log.Println("Error connecting to current position table")

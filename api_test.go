@@ -33,15 +33,15 @@ func TestServerDefaultPath(t *testing.T) {
 
 	checkResponseCode(t, http.StatusOK, response.Code)
 
-	var hellowWorldResponse HelloWorldResponse
+	var helloWorldResponse HelloWorldResponse
 
-	err := json.NewDecoder(response.Body).Decode(&hellowWorldResponse)
+	err := json.NewDecoder(response.Body).Decode(&helloWorldResponse)
 	if err != nil {
 		t.Errorf("Expected json, got decode error")
 	}
-	if hellowWorldResponse.Message != "Hello, World!" {
+	if helloWorldResponse.Message != "Hello, World!" {
 		t.Errorf("Expected Hello World. Got %s",
-			hellowWorldResponse.Message)
+			helloWorldResponse.Message)
 	}
 }
 
