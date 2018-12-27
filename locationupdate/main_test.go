@@ -285,27 +285,3 @@ func (dq *dummy_queue) SendToQueue(data interface{}, shardId string) error {
 	}
 	return nil
 }
-
-func TestIncompleteLocationBulkUpdate(t *testing.T) {
-	var logBuf bytes.Buffer
-	log.SetOutput(&logBuf)
-	defer log.SetOutput(os.Stderr)
-
-	queue = &dummy_queue{update: Movement_update{}, t: t}
-
-	var buf bytes.Buffer
-	buf.WriteString(`[{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true},{"uuid":"Test-UUID","eventId":0,"regionId":1,"entering":true}]`)
-	req, _ := http.NewRequest("POST", "/bulkUpdate", &buf)
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
-	expected := "OccurredAt not present in movement update"
-	if body := response.Body.String(); strings.TrimSpace(body) != expected {
-		t.Errorf("Expected \"%s\". Got \"%s\"", expected, body)
-	}
-
-	r, _ := regexp.Compile(`^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} ` + expected + `\n$`)
-	if !r.MatchString(logBuf.String()) {
-		t.Errorf("Expected Log output for %s", expected)
-	}
-}
