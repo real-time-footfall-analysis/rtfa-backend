@@ -65,16 +65,6 @@ func validateRegion(region *Region, eventID int) error {
 
 }
 
-func validateAllEventsRequest(allEventsReq *AllEventsRequest) error {
-
-	if allEventsReq.OrganiserID == 0 {
-		return errors.New("Missing organiser ID")
-	}
-
-	return nil
-
-}
-
 func validateOrganiserID(organiserID int32) error {
 
 	if organiserID == 0 {
