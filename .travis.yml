@@ -5,9 +5,6 @@ language: go
 go:
   - "1.11.2"
 
-install:
-  - echo "Nothing to install outside container"
-
 services:
   - docker
 
