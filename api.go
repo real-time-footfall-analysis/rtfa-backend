@@ -44,7 +44,7 @@ func preflightHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func standardHandler(w http.ResponseWriter, _ *http.Request) {
-	json.NewEncoder(w).Encode(TestMessage{
+	_ = json.NewEncoder(w).Encode(TestMessage{
 		Message: "Hello, World!",
 	})
 	return

@@ -18,7 +18,7 @@ const kinesisStreamName = "movement_event_stream"
 // Init registers the endpoints exposed by this package
 // with the given Router.
 // Also initialises the static data database connection
-var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KenisisQueueClient{}
+var queue kinesisqueue.KinesisQueueInterface = &kinesisqueue.KinesisQueueClient{}
 
 func Init(r *mux.Router) {
 
@@ -29,7 +29,6 @@ func Init(r *mux.Router) {
 	}
 
 	r.HandleFunc("/update", updateHandler).Methods("POST")
-	r.HandleFunc("/bulkUpdate", bulkKensisUpdateHandler).Methods("POST")
 }
 
 const (
@@ -103,41 +102,6 @@ func updateHandler(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Error sending data to Kinesis")
 		log.Println(err.Error())
 	}
-}
-
-func bulkKensisUpdateHandler(writer http.ResponseWriter, request *http.Request) {
-
-	decoder := json.NewDecoder(request.Body)
-
-	var updates []Movement_update
-
-	err := decoder.Decode(&updates)
-
-	if err != nil {
-		log.Println("Cannot decode movement updates: ", err)
-		http.Error(
-			writer,
-			fmt.Sprintf("Failed to decode movement updates: %s", err),
-			http.StatusBadRequest)
-		return
-	}
-
-	// Validate and insert into the database
-	for _, update := range updates {
-
-		err := validateUpdate(&update, writer)
-		if err != nil {
-			return
-		}
-
-		err = queue.SendToQueue(update, strconv.Itoa(*update.RegionID))
-		if err != nil {
-			log.Printf("Error posting movement update to Kenisis: %+v", update)
-			log.Println(err.Error())
-		}
-
-	}
-
 }
 
 func validateUpdate(update *Movement_update, writer http.ResponseWriter) error {

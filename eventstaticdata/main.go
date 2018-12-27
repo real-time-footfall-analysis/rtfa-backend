@@ -43,7 +43,7 @@ func getAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(events)
+	_ = json.NewEncoder(w).Encode(events)
 
 }
 
@@ -71,7 +71,7 @@ func getEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(events)
+	_ = json.NewEncoder(w).Encode(events)
 
 }
 
@@ -113,7 +113,7 @@ func postEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(event)
+	_ = json.NewEncoder(w).Encode(event)
 
 }
 
@@ -152,7 +152,7 @@ func getEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(event)
+	_ = json.NewEncoder(w).Encode(event)
 
 }
 
@@ -216,7 +216,7 @@ func postEventMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(eventMap)
+	_ = json.NewEncoder(w).Encode(eventMap)
 
 }
 
@@ -280,7 +280,7 @@ func postRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(regions)
+	_ = json.NewEncoder(w).Encode(regions)
 
 }
 
@@ -319,7 +319,7 @@ func getAllRegionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(regions)
+	_ = json.NewEncoder(w).Encode(regions)
 
 }
 
@@ -377,7 +377,7 @@ func getRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(region)
+	_ = json.NewEncoder(w).Encode(region)
 
 }
 
@@ -469,6 +469,6 @@ func updateRegionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(region)
+	_ = json.NewEncoder(w).Encode(region)
 
 }
