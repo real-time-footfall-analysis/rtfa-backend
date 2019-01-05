@@ -56,6 +56,7 @@ type Region struct {
 	Radius    int32    `json:"radius,omitempty"`
 	EventID   int32    `json:"eventID"`
 	IsQueue   bool     `json:"isQueue"`
+	Cat       int32    `json:"cat"`
 }
 
 var dbUsername string
